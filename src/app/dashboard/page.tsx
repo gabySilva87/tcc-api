@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import Image from "next/image";
 import RouteNotifications from "@/components/route-notifications";
-import { LogoutButton } from "@/components/logout-button";
 
 export default function DashboardPage() {
   return (
@@ -29,7 +28,7 @@ export default function DashboardPage() {
                 <AvatarImage src="https://picsum.photos/seed/driver/100/100" alt="Usuário" data-ai-hint="driver portrait" />
                 <AvatarFallback>DR</AvatarFallback>
               </Avatar>
-              <LogoutButton />
+              {/* O botão de logout será adicionado novamente mais tarde */}
             </div>
           </div>
         </div>
