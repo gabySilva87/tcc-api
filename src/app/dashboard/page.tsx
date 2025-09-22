@@ -6,30 +6,7 @@ import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { logout } from "@/app/actions";
 import Image from "next/image";
-
-const notifications = [
-  {
-    id: 1,
-    title: "Nova Rota Atribuída",
-    description: "Entrega para o centro da cidade às 14h. Detalhes no app de rotas.",
-    time: "5 min atrás",
-    read: false,
-  },
-  {
-    id: 2,
-    title: "Manutenção do Veículo Agendada",
-    description: "Lembrete: Troca de óleo agendada para amanhã, 08:00.",
-    time: "2 horas atrás",
-    read: false,
-  },
-  {
-    id: 3,
-    title: "Rota Concluída",
-    description: "Entrega #1024 foi concluída com sucesso.",
-    time: "1 dia atrás",
-    read: true,
-  },
-];
+import RouteNotifications from "@/components/route-notifications";
 
 const LogiDeskLogo = () => (
     <svg
@@ -80,35 +57,7 @@ export default function DashboardPage() {
 
         <div className="grid gap-8 md:grid-cols-3">
           <div className="md:col-span-2 flex flex-col gap-8">
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <Bell className="w-6 h-6 text-primary" />
-                  <CardTitle>Notificações</CardTitle>
-                </div>
-                <Badge variant="default" className="bg-primary/90">2 novas</Badge>
-              </CardHeader>
-              <CardContent>
-                <ul className="space-y-4">
-                  {notifications.map((notification, index) => (
-                    <li key={notification.id}>
-                      <div className="flex gap-4 items-start">
-                        <div className="flex-shrink-0 pt-1.5">
-                          <span className={`block h-2.5 w-2.5 rounded-full ${!notification.read ? 'bg-primary animate-pulse' : 'bg-muted'}`} />
-                        </div>
-                        <div className="flex-1">
-                          <p className="font-semibold">{notification.title}</p>
-                          <p className="text-sm text-muted-foreground">{notification.description}</p>
-                          <p className="text-xs text-muted-foreground/80 mt-1">{notification.time}</p>
-                        </div>
-                        <MapPin className="w-5 h-5 text-muted-foreground flex-shrink-0 mt-1" />
-                      </div>
-                      {index < notifications.length - 1 && <Separator className="mt-4" />}
-                    </li>
-                  ))}
-                </ul>
-              </CardContent>
-            </Card>
+            <RouteNotifications />
           </div>
           
           <Card className="md:col-span-1">
