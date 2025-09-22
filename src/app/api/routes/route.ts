@@ -1,18 +1,15 @@
 import { NextResponse } from 'next/server';
-// O pacote 'mysql2/promise' é ideal para usar com async/await.
 import mysql from 'mysql2/promise';
 
-// Esta é a rota da API que se conectará ao seu banco de dados MySQL.
-// O pacote `mysql2` foi adicionado ao seu `package.json`.
-
 export async function GET(request: Request) {
+  let connection;
   try {
     // =======================================================================
     // PASSO 1: CONEXÃO COM O MYSQL
     // =======================================================================
     // As credenciais são lidas de forma segura a partir de variáveis de ambiente
     // do seu arquivo .env.local.
-    const connection = await mysql.createConnection({
+    connection = await mysql.createConnection({
       host: process.env.DB_HOST,
       port: Number(process.env.DB_PORT),
       user: process.env.DB_USER,
@@ -23,18 +20,29 @@ export async function GET(request: Request) {
     // =======================================================================
     // PASSO 2: CONSULTA SQL
     // =======================================================================
-    // Execute a consulta para buscar as rotas.
-    // Você pode querer filtrar por ID do motorista, etc.
-    const [rows, fields] = await connection.execute('SELECT * FROM rotas WHERE status = "pendente"');
+    // Execute a consulta para buscar as encomendas pendentes.
+    // Esta consulta foi atualizada para corresponder ao seu esquema de banco de dados.
+    const [rows] = await connection.execute(
+      'SELECT id_encomenda, nm_encomenda, ds_encomenda, created_at FROM tb_encomenda WHERE nm_status_encomenda = "pendente"'
+    );
 
     // =======================================================================
-    // PASSO 3: RETORNAR OS DADOS
+    // PASSO 3: MAPEAMENTO DOS DADOS
     // =======================================================================
-    // Após buscar os dados, feche a conexão.
-    await connection.end();
-
-    // Retorna as linhas (rows) do seu banco de dados como JSON.
-    return NextResponse.json(rows);
+    // O frontend espera campos como 'id', 'title', 'description' e 'time'.
+    // Mapeamos os resultados da sua tabela para o formato esperado.
+    const routes = (rows as any[]).map(row => ({
+      id: row.id_encomenda,
+      title: row.nm_encomenda,
+      description: row.ds_encomenda,
+      time: new Date(row.created_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
+      read: false // Assumindo que novas notificações não foram lidas
+    }));
+    
+    // =======================================================================
+    // PASSO 4: RETORNAR OS DADOS
+    // =======================================================================
+    return NextResponse.json(routes);
 
   } catch (error) {
     console.error('Erro na API ao buscar rotas:', error);
@@ -43,5 +51,10 @@ export async function GET(request: Request) {
       { message: 'Ocorreu um erro ao buscar os dados das rotas.' },
       { status: 500 }
     );
+  } finally {
+    // Garante que a conexão seja sempre fechada, mesmo se ocorrer um erro.
+    if (connection) {
+      await connection.end();
+    }
   }
 }
