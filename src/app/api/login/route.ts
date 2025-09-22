@@ -58,23 +58,24 @@ export async function POST(request: Request) {
   } catch (error: any) {
     // Em caso de erro (ex: falha na conexão com o banco), loga o erro no console
     // e retorna uma resposta de erro genérica e mais informativa.
-    console.error('Erro na API de Login:', error.message);
+    console.error('[ERRO NA API DE LOGIN]:', error); // Log detalhado do erro no terminal
+    
     // Verificar se o erro é de conexão
     if (error.code === 'ECONNREFUSED' || error.code === 'ENOTFOUND') {
          return NextResponse.json(
-            { success: false, message: `Não foi possível conectar ao servidor de banco de dados. Verifique o DB_HOST e a porta.` },
+            { success: false, message: `Não foi possível conectar ao servidor de banco de dados em '${process.env.DB_HOST}'. Verifique o DB_HOST e a porta.` },
             { status: 500 }
         );
     }
     if (error.code === 'ER_ACCESS_DENIED_ERROR') {
         return NextResponse.json(
-            { success: false, message: `Acesso negado. Verifique o usuário e a senha do banco de dados.` },
+            { success: false, message: `Acesso negado para o usuário '${process.env.DB_USER}'. Verifique o usuário e a senha do banco de dados.` },
             { status: 500 }
         );
     }
     if (error.code === 'ER_BAD_DB_ERROR') {
         return NextResponse.json(
-            { success: false, message: `O banco de dados '${process.env.DB_DATABASE}' não foi encontrado. Verifique a variável DB_DATABASE.` },
+            { success: false, message: `O banco de dados '${process.env.DB_DATABASE}' não foi encontrado no host. Verifique a variável DB_DATABASE.` },
             { status: 500 }
         );
     }

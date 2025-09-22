@@ -49,14 +49,14 @@ export async function GET(request: Request) {
 
   } catch (error: any) {
     // Em caso de erro (ex: falha na conexão), loga o erro no console.
-    console.error('Erro na API ao buscar rotas:', error.message);
-    
+    console.error('[ERRO NA API DE ROTAS]:', error); // Log detalhado do erro no terminal
+
     // Devolve uma mensagem de erro mais específica para o frontend.
     let errorMessage = 'Ocorreu um erro ao buscar os dados das rotas.';
     if (error.code === 'ECONNREFUSED' || error.code === 'ENOTFOUND') {
-      errorMessage = 'Não foi possível conectar ao banco de dados. Verifique o host e a porta.';
+      errorMessage = `Não foi possível conectar ao banco de dados em '${process.env.DB_HOST}'. Verifique o host e a porta.`;
     } else if (error.code === 'ER_ACCESS_DENIED_ERROR') {
-      errorMessage = 'Acesso negado. Verifique as credenciais do banco de dados.';
+      errorMessage = `Acesso negado para o usuário '${process.env.DB_USER}'. Verifique as credenciais do banco de dados.`;
     } else if (error.code === 'ER_BAD_DB_ERROR') {
       errorMessage = `Banco de dados '${process.env.DB_DATABASE}' não encontrado.`;
     }
