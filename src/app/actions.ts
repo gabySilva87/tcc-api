@@ -6,7 +6,7 @@ import { z } from 'zod';
 // Define o schema de validação para os dados do formulário de login usando Zod.
 // Isso garante que os dados tenham o formato esperado antes de prosseguir.
 const loginSchema = z.object({
-  email: z.string().email({ message: 'Por favor, insira um email válido.' }),
+  name: z.string().min(1, { message: 'Por favor, insira seu nome.' }),
   cpf: z.string().min(11, { message: 'Por favor, insira um CPF válido.' }),
 });
 
@@ -28,7 +28,7 @@ export async function login(prevState: any, formData: FormData) {
   }
 
   // Se a validação for bem-sucedida, extrai os dados.
-  const { email, cpf } = validatedFields.data;
+  const { name, cpf } = validatedFields.data;
 
   try {
     // Monta a URL da nossa própria API de login.
@@ -39,7 +39,7 @@ export async function login(prevState: any, formData: FormData) {
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ email, cpf }),
+      body: JSON.stringify({ name, cpf }),
     });
 
     // Se a resposta da API for bem-sucedida (status 200 OK)...
@@ -53,7 +53,7 @@ export async function login(prevState: any, formData: FormData) {
       // ...e retorna a mensagem para ser exibida no formulário.
       return {
         ...prevState,
-        message: errorData.message || 'Credenciais inválidas. Verifique seu email e CPF.',
+        message: errorData.message || 'Credenciais inválidas. Verifique seu nome e CPF.',
         errors: {},
       };
     }

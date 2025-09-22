@@ -3,13 +3,13 @@ import mysql from 'mysql2/promise';
 
 // A função POST é acionada quando o formulário de login é enviado.
 export async function POST(request: Request) {
-  // Extrai o email e o CPF do corpo da requisição.
-  const { email, cpf } = await request.json();
+  // Extrai o nome e o CPF do corpo da requisição.
+  const { name, cpf } = await request.json();
 
   // Validação básica para garantir que ambos os campos foram enviados.
-  if (!email || !cpf) {
+  if (!name || !cpf) {
     return NextResponse.json(
-      { success: false, message: 'Email e CPF são obrigatórios.' },
+      { success: false, message: 'Nome e CPF são obrigatórios.' },
       { status: 400 }
     );
   }
@@ -34,11 +34,10 @@ export async function POST(request: Request) {
     // PASSO 2: CONSULTA SQL PARA VERIFICAR AS CREDENCIAIS
     // =======================================================================
     // Executa uma consulta na tabela `tb_motorista` para encontrar um motorista
-    // que corresponda ao email e CPF fornecidos.
-    // Adicionamos a coluna 'email' manualmente à tabela ou garantimos sua existência.
+    // que corresponda ao nome e CPF fornecidos.
     const [rows] = await connection.execute(
-      'SELECT * FROM tb_motorista WHERE email = ? AND nr_cpf = ?',
-      [email, cpf]
+      'SELECT * FROM tb_motorista WHERE nm_motorista = ? AND nr_cpf = ?',
+      [name, cpf]
     );
 
     // =======================================================================
@@ -51,7 +50,7 @@ export async function POST(request: Request) {
     } else {
       // Se nenhuma linha for encontrada, as credenciais são inválidas.
       return NextResponse.json(
-        { success: false, message: 'Credenciais inválidas. Verifique seu email e CPF.' },
+        { success: false, message: 'Credenciais inválidas. Verifique seu nome e CPF.' },
         { status: 401 }
       );
     }

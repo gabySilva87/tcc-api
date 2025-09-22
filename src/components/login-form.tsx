@@ -84,11 +84,11 @@ export function LoginForm() {
         </CardHeader>
         <CardContent className="grid gap-6 mt-4">
           <div className="grid gap-2 text-left">
-            <Label htmlFor="email">Email</Label>
-            <Input id="email" type="email" name="email" required aria-describedby='email-error' className="bg-input border-none rounded-full px-5 py-6 text-background" />
-            {/* Área para exibir mensagens de erro específicas do campo de email. */}
-            <div id="email-error" aria-live="polite" aria-atomic="true">
-              {state?.errors?.email && <p className="text-sm font-medium text-destructive">{state.errors.email[0]}</p>}
+            <Label htmlFor="name">Nome</Label>
+            <Input id="name" type="text" name="name" required aria-describedby='name-error' className="bg-input border-none rounded-full px-5 py-6 text-background" />
+            {/* Área para exibir mensagens de erro específicas do campo de nome. */}
+            <div id="name-error" aria-live="polite" aria-atomic="true">
+              {state?.errors?.name && <p className="text-sm font-medium text-destructive">{state.errors.name[0]}</p>}
             </div>
           </div>
           <div className="grid gap-2 text-left">
