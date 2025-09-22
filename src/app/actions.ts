@@ -1,6 +1,5 @@
 'use server';
 
-import { redirect } from 'next/navigation';
 import { z } from 'zod';
 
 // Define o schema de validação para os dados do formulário de login usando Zod.
@@ -22,6 +21,7 @@ export async function login(prevState: any, formData: FormData) {
   // Se a validação falhar, retorna os erros para serem exibidos no formulário.
   if (!validatedFields.success) {
     return {
+      success: false,
       errors: validatedFields.error.flatten().fieldErrors,
       message: 'Dados inválidos.',
     };
@@ -44,15 +44,18 @@ export async function login(prevState: any, formData: FormData) {
 
     // Se a resposta da API for bem-sucedida (status 200 OK)...
     if (response.ok) {
-      // ...redireciona o usuário para o dashboard.
-      // Em uma aplicação real, aqui você definiria um cookie de sessão.
-      redirect('/dashboard');
+        // Retorna um estado de sucesso para o cliente lidar com o redirecionamento.
+        return {
+            success: true,
+            message: 'Login bem-sucedido!',
+            errors: {},
+        }
     } else {
       // Se a API retornar um erro (ex: credenciais inválidas), lê a mensagem de erro...
       const errorData = await response.json();
       // ...e retorna a mensagem para ser exibida no formulário.
       return {
-        ...prevState,
+        success: false,
         message: errorData.message || 'Credenciais inválidas. Verifique seu nome e CPF.',
         errors: {},
       };
@@ -61,7 +64,7 @@ export async function login(prevState: any, formData: FormData) {
     // Se ocorrer um erro de rede (ex: a API não está acessível), retorna uma mensagem de erro genérica.
     console.error('[ERRO NA ACTION DE LOGIN]:', error);
     return {
-      ...prevState,
+      success: false,
       message: 'Ocorreu um erro de rede. Tente novamente mais tarde.',
       errors: {},
     };
@@ -69,8 +72,8 @@ export async function login(prevState: any, formData: FormData) {
 }
 
 // Server Action para fazer o logout do usuário.
+// O redirect aqui funciona bem porque é chamado diretamente de um formulário simples.
 export async function logout() {
-  // Em uma aplicação real com gerenciamento de sessão, aqui você limparia a sessão/cookie.
-  // Por enquanto, apenas redireciona o usuário de volta para a página inicial.
+  const { redirect } = await import('next/navigation');
   redirect('/');
 }
