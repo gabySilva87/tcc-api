@@ -39,7 +39,7 @@ export async function login(prevState: any, formData: FormData) {
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ nome, cpf }), // CORRIGIDO: Enviando 'nome' em vez de 'name'
+      body: JSON.stringify({ nome, cpf }),
     });
 
     // Se a resposta da API for bem-sucedida (status 200 OK)...
