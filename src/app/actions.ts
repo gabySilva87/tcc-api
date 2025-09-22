@@ -6,7 +6,7 @@ import { z } from 'zod';
 // Define o schema de validação para os dados do formulário de login usando Zod.
 // Isso garante que os dados tenham o formato esperado antes de prosseguir.
 const loginSchema = z.object({
-  name: z.string().min(1, { message: 'Por favor, insira seu nome.' }),
+  nome: z.string().min(1, { message: 'Por favor, insira seu nome.' }),
   cpf: z.string().min(11, { message: 'Por favor, insira um CPF válido.' }),
 });
 
@@ -28,7 +28,7 @@ export async function login(prevState: any, formData: FormData) {
   }
 
   // Se a validação for bem-sucedida, extrai os dados.
-  const { name, cpf } = validatedFields.data;
+  const { nome, cpf } = validatedFields.data;
 
   try {
     // Monta a URL da nossa própria API de login.
@@ -39,7 +39,7 @@ export async function login(prevState: any, formData: FormData) {
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ name, cpf }),
+      body: JSON.stringify({ name: nome, cpf }), // A API espera 'name'
     });
 
     // Se a resposta da API for bem-sucedida (status 200 OK)...
@@ -59,6 +59,7 @@ export async function login(prevState: any, formData: FormData) {
     }
   } catch (error) {
     // Se ocorrer um erro de rede (ex: a API não está acessível), retorna uma mensagem de erro genérica.
+    console.error('[ERRO NA ACTION DE LOGIN]:', error);
     return {
       ...prevState,
       message: 'Ocorreu um erro de rede. Tente novamente mais tarde.',
