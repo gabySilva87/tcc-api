@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
-import { Bell, MapPin } from "lucide-react";
+import { Bell, MapPin, AlertTriangle } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 
 // Interface para definir a estrutura de dados de uma rota/notificação.
@@ -29,10 +29,12 @@ export default function RouteNotifications() {
       try {
         // Faz uma requisição para a nossa API interna que se conecta ao banco de dados.
         const response = await fetch('/api/routes');
-        if (!response.ok) {
-          throw new Error('Falha ao buscar os dados das rotas.');
-        }
         const data = await response.json();
+        
+        if (!response.ok) {
+          // Se a resposta não for OK, lança um erro com a mensagem vinda da API.
+          throw new Error(data.message || 'Falha ao buscar os dados das rotas.');
+        }
         // Atualiza o estado com os dados recebidos da API.
         setRoutes(data);
       } catch (err: any) {
@@ -84,15 +86,19 @@ export default function RouteNotifications() {
     );
   }
 
-  // Se ocorreu um erro ao buscar os dados, exibe uma mensagem de erro.
+  // Se ocorreu um erro ao buscar os dados, exibe uma mensagem de erro mais clara.
   if (error) {
     return (
-        <Card>
-            <CardHeader>
-                <CardTitle className="text-destructive">Erro</CardTitle>
+        <Card className="border-destructive/50">
+            <CardHeader className="flex flex-row items-center gap-3">
+                <AlertTriangle className="w-6 h-6 text-destructive" />
+                <CardTitle className="text-destructive">Erro de Conexão</CardTitle>
             </CardHeader>
             <CardContent>
-                <p className="text-destructive-foreground">{error}</p>
+                <p className="text-destructive">{error}</p>
+                <p className="text-muted-foreground text-sm mt-2">
+                    Por favor, verifique se as credenciais no seu arquivo `.env.local` estão corretas e se o servidor de banco de dados está acessível.
+                </p>
             </CardContent>
         </Card>
     )

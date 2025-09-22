@@ -9,13 +9,14 @@ export async function GET(request: Request) {
     // PASSO 1: CONEXÃO COM O BANCO DE DADOS MYSQL
     // =======================================================================
     // As credenciais são lidas de forma segura a partir de variáveis de ambiente
-    // do seu arquivo .env.local.
+    // do seu arquivo .env.local. A opção SSL é adicionada para compatibilidade.
     connection = await mysql.createConnection({
       host: process.env.DB_HOST,
       port: Number(process.env.DB_PORT),
       user: process.env.DB_USER,
       password: process.env.DB_PASSWORD,
       database: process.env.DB_DATABASE,
+      ssl: process.env.DB_SSL === 'true' ? { rejectUnauthorized: true } : undefined,
     });
 
     // =======================================================================
@@ -46,12 +47,22 @@ export async function GET(request: Request) {
     // Retorna os dados mapeados em formato JSON.
     return NextResponse.json(routes);
 
-  } catch (error) {
+  } catch (error: any) {
     // Em caso de erro (ex: falha na conexão), loga o erro no console.
-    console.error('Erro na API ao buscar rotas:', error);
-    // Retorna uma resposta de erro do servidor para o frontend.
+    console.error('Erro na API ao buscar rotas:', error.message);
+    
+    // Devolve uma mensagem de erro mais específica para o frontend.
+    let errorMessage = 'Ocorreu um erro ao buscar os dados das rotas.';
+    if (error.code === 'ECONNREFUSED' || error.code === 'ENOTFOUND') {
+      errorMessage = 'Não foi possível conectar ao banco de dados. Verifique o host e a porta.';
+    } else if (error.code === 'ER_ACCESS_DENIED_ERROR') {
+      errorMessage = 'Acesso negado. Verifique as credenciais do banco de dados.';
+    } else if (error.code === 'ER_BAD_DB_ERROR') {
+      errorMessage = `Banco de dados '${process.env.DB_DATABASE}' não encontrado.`;
+    }
+
     return NextResponse.json(
-      { message: 'Ocorreu um erro ao buscar os dados das rotas.' },
+      { message: errorMessage },
       { status: 500 }
     );
   } finally {

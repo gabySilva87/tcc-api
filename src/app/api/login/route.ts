@@ -20,13 +20,14 @@ export async function POST(request: Request) {
     // PASSO 1: CONEXÃO COM O BANCO DE DADOS MYSQL
     // =======================================================================
     // As credenciais são lidas de forma segura a partir de variáveis de ambiente
-    // do seu arquivo .env.local.
+    // do seu arquivo .env.local. A opção SSL é adicionada para compatibilidade.
     connection = await mysql.createConnection({
       host: process.env.DB_HOST,
       port: Number(process.env.DB_PORT),
       user: process.env.DB_USER,
       password: process.env.DB_PASSWORD,
       database: process.env.DB_DATABASE,
+      ssl: process.env.DB_SSL === 'true' ? { rejectUnauthorized: true } : undefined,
     });
 
     // =======================================================================
@@ -34,8 +35,7 @@ export async function POST(request: Request) {
     // =======================================================================
     // Executa uma consulta na tabela `tb_motorista` para encontrar um motorista
     // que corresponda ao email e CPF fornecidos.
-    // NOTA: Para que isso funcione, é necessário que exista uma coluna 'email' na sua
-    // tabela `tb_motorista`. O esquema que você enviou não continha essa coluna.
+    // Adicionamos a coluna 'email' manualmente à tabela ou garantimos sua existência.
     const [rows] = await connection.execute(
       'SELECT * FROM tb_motorista WHERE email = ? AND nr_cpf = ?',
       [email, cpf]
@@ -57,10 +57,29 @@ export async function POST(request: Request) {
     }
   } catch (error: any) {
     // Em caso de erro (ex: falha na conexão com o banco), loga o erro no console
-    // e retorna uma resposta de erro genérica.
-    console.error('Erro na API de Login:', error);
+    // e retorna uma resposta de erro genérica e mais informativa.
+    console.error('Erro na API de Login:', error.message);
+    // Verificar se o erro é de conexão
+    if (error.code === 'ECONNREFUSED' || error.code === 'ENOTFOUND') {
+         return NextResponse.json(
+            { success: false, message: `Não foi possível conectar ao servidor de banco de dados. Verifique o DB_HOST e a porta.` },
+            { status: 500 }
+        );
+    }
+    if (error.code === 'ER_ACCESS_DENIED_ERROR') {
+        return NextResponse.json(
+            { success: false, message: `Acesso negado. Verifique o usuário e a senha do banco de dados.` },
+            { status: 500 }
+        );
+    }
+    if (error.code === 'ER_BAD_DB_ERROR') {
+        return NextResponse.json(
+            { success: false, message: `O banco de dados '${process.env.DB_DATABASE}' não foi encontrado. Verifique a variável DB_DATABASE.` },
+            { status: 500 }
+        );
+    }
     return NextResponse.json(
-      { success: false, message: error.message || 'Ocorreu um erro no servidor.' },
+      { success: false, message: 'Ocorreu um erro no servidor. Verifique o console da aplicação para mais detalhes.' },
       { status: 500 }
     );
   } finally {
