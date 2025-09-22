@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Bell, MapPin } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 
+// Interface para definir a estrutura de dados de uma rota/notificação.
 interface Route {
   id: number;
   title: string;
@@ -15,32 +16,41 @@ interface Route {
   read: boolean;
 }
 
+// Componente React para exibir as notificações de rotas.
 export default function RouteNotifications() {
+  // Estados para gerenciar os dados das rotas, o status de carregamento e possíveis erros.
   const [routes, setRoutes] = useState<Route[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // `useEffect` é usado para buscar os dados da API quando o componente é montado.
   useEffect(() => {
     async function fetchRoutes() {
       try {
+        // Faz uma requisição para a nossa API interna que se conecta ao banco de dados.
         const response = await fetch('/api/routes');
         if (!response.ok) {
           throw new Error('Falha ao buscar os dados das rotas.');
         }
         const data = await response.json();
+        // Atualiza o estado com os dados recebidos da API.
         setRoutes(data);
       } catch (err: any) {
+        // Em caso de erro, atualiza o estado de erro.
         setError(err.message);
       } finally {
+        // Independentemente de sucesso ou erro, define o carregamento como falso.
         setLoading(false);
       }
     }
 
     fetchRoutes();
-  }, []);
+  }, []); // O array vazio `[]` garante que o `useEffect` rode apenas uma vez.
 
+  // Calcula o número de notificações não lidas.
   const unreadCount = routes.filter(route => !route.read).length;
 
+  // Se os dados ainda estão sendo carregados, exibe um esqueleto (placeholders de carregamento).
   if (loading) {
     return (
       <Card>
@@ -74,6 +84,7 @@ export default function RouteNotifications() {
     );
   }
 
+  // Se ocorreu um erro ao buscar os dados, exibe uma mensagem de erro.
   if (error) {
     return (
         <Card>
@@ -87,6 +98,7 @@ export default function RouteNotifications() {
     )
   }
 
+  // Se os dados foram carregados com sucesso, exibe a lista de notificações.
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">

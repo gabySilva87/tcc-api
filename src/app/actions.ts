@@ -3,16 +3,23 @@
 import { redirect } from 'next/navigation';
 import { z } from 'zod';
 
+// Define o schema de validação para os dados do formulário de login usando Zod.
+// Isso garante que os dados tenham o formato esperado antes de prosseguir.
 const loginSchema = z.object({
   email: z.string().email({ message: 'Por favor, insira um email válido.' }),
   cpf: z.string().min(11, { message: 'Por favor, insira um CPF válido.' }),
 });
 
+// Esta é uma "Server Action" do Next.js. Ela é executada no servidor.
+// `prevState` armazena o estado da ação anterior (útil para mostrar erros).
+// `formData` contém os dados do formulário que o usuário enviou.
 export async function login(prevState: any, formData: FormData) {
+  // Valida os dados do formulário com base no `loginSchema`.
   const validatedFields = loginSchema.safeParse(
     Object.fromEntries(formData.entries())
   );
 
+  // Se a validação falhar, retorna os erros para serem exibidos no formulário.
   if (!validatedFields.success) {
     return {
       errors: validatedFields.error.flatten().fieldErrors,
@@ -20,10 +27,13 @@ export async function login(prevState: any, formData: FormData) {
     };
   }
 
+  // Se a validação for bem-sucedida, extrai os dados.
   const { email, cpf } = validatedFields.data;
 
   try {
+    // Monta a URL da nossa própria API de login.
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:9002';
+    // Faz uma requisição POST para a API de login com as credenciais do usuário.
     const response = await fetch(`${baseUrl}/api/login`, {
       method: 'POST',
       headers: {
@@ -32,12 +42,15 @@ export async function login(prevState: any, formData: FormData) {
       body: JSON.stringify({ email, cpf }),
     });
 
+    // Se a resposta da API for bem-sucedida (status 200 OK)...
     if (response.ok) {
-      // For a real app, you would set a session cookie here.
-      // For this example, we'll just redirect.
+      // ...redireciona o usuário para o dashboard.
+      // Em uma aplicação real, aqui você definiria um cookie de sessão.
       redirect('/dashboard');
     } else {
+      // Se a API retornar um erro (ex: credenciais inválidas), lê a mensagem de erro...
       const errorData = await response.json();
+      // ...e retorna a mensagem para ser exibida no formulário.
       return {
         ...prevState,
         message: errorData.message || 'Credenciais inválidas. Verifique seu email e CPF.',
@@ -45,6 +58,7 @@ export async function login(prevState: any, formData: FormData) {
       };
     }
   } catch (error) {
+    // Se ocorrer um erro de rede (ex: a API não está acessível), retorna uma mensagem de erro genérica.
     return {
       ...prevState,
       message: 'Ocorreu um erro de rede. Tente novamente mais tarde.',
@@ -53,7 +67,9 @@ export async function login(prevState: any, formData: FormData) {
   }
 }
 
+// Server Action para fazer o logout do usuário.
 export async function logout() {
-  // In a real app with session management, you would clear the session here.
+  // Em uma aplicação real com gerenciamento de sessão, aqui você limparia a sessão/cookie.
+  // Por enquanto, apenas redireciona o usuário de volta para a página inicial.
   redirect('/');
 }

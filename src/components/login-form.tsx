@@ -12,11 +12,14 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Loader2 } from 'lucide-react';
 
+// Estado inicial para a Server Action. `message` guarda mensagens de erro globais,
+// e `errors` guarda erros específicos de cada campo do formulário.
 const initialState = {
   message: null,
   errors: {},
 };
 
+// Componente para o logotipo da aplicação.
 const LogiDeskLogo = () => (
     <svg
       className="w-20 h-20 text-primary"
@@ -33,7 +36,8 @@ const LogiDeskLogo = () => (
     </svg>
 );
 
-
+// Componente do botão de submit, que mostra um ícone de carregamento
+// enquanto o formulário está sendo enviado.
 function SubmitButton() {
   const { pending } = useFormStatus();
 
@@ -50,11 +54,16 @@ function SubmitButton() {
   );
 }
 
+// Componente principal do formulário de login.
 export function LoginForm() {
+  // `useActionState` é um hook do React para gerenciar o estado de formulários que usam Server Actions.
+  // `state` contém as respostas da action (erros, mensagens), e `formAction` é o que aciona a action.
   const [state, formAction] = useActionState(login, initialState);
   const { toast } = useToast();
 
+  // `useEffect` para observar mudanças no estado e exibir um "toast" de erro.
   useEffect(() => {
+    // Se a action retornar uma mensagem de erro global, exibe o toast.
     if (state?.message && state.message !== 'Dados inválidos.') {
       toast({
         variant: 'destructive',
@@ -66,6 +75,7 @@ export function LoginForm() {
 
   return (
     <Card className="w-full max-w-sm shadow-none border-none bg-transparent">
+      {/* O atributo `action` do formulário aponta para a nossa Server Action. */}
       <form action={formAction}>
         <CardHeader className="text-center items-center space-y-2">
           <LogiDeskLogo />
@@ -76,6 +86,7 @@ export function LoginForm() {
           <div className="grid gap-2 text-left">
             <Label htmlFor="email">Email</Label>
             <Input id="email" type="email" name="email" required aria-describedby='email-error' className="bg-input border-none rounded-full px-5 py-6 text-background" />
+            {/* Área para exibir mensagens de erro específicas do campo de email. */}
             <div id="email-error" aria-live="polite" aria-atomic="true">
               {state?.errors?.email && <p className="text-sm font-medium text-destructive">{state.errors.email[0]}</p>}
             </div>
@@ -83,6 +94,7 @@ export function LoginForm() {
           <div className="grid gap-2 text-left">
             <Label htmlFor="cpf">CPF</Label>
             <Input id="cpf" type="text" name="cpf" required aria-describedby='cpf-error' className="bg-input border-none rounded-full px-5 py-6 text-background"/>
+            {/* Área para exibir mensagens de erro específicas do campo de CPF. */}
             <div id="cpf-error" aria-live="polite" aria-atomic="true">
              {state?.errors?.cpf && <p className="text-sm font-medium text-destructive">{state.errors.cpf[0]}</p>}
             </div>
