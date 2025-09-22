@@ -4,7 +4,7 @@ import { redirect } from 'next/navigation';
 import { z } from 'zod';
 
 const loginSchema = z.object({
-  nome: z.string().min(1, { message: 'Por favor, insira seu nome.' }),
+  email: z.string().email({ message: 'Por favor, insira um email válido.' }),
   senha: z.string().min(1, { message: 'Por favor, insira sua senha.' }),
 });
 
@@ -20,7 +20,7 @@ export async function login(prevState: any, formData: FormData) {
     };
   }
 
-  const { nome, senha } = validatedFields.data;
+  const { email, senha } = validatedFields.data;
 
   try {
     // Note: This URL needs to be absolute for server-side fetch.
@@ -30,7 +30,7 @@ export async function login(prevState: any, formData: FormData) {
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ nome, senha }),
+      body: JSON.stringify({ email, senha }),
     });
 
     if (response.ok) {
@@ -39,7 +39,7 @@ export async function login(prevState: any, formData: FormData) {
       const errorData = await response.json();
       return {
         ...prevState,
-        message: errorData.message || 'Credenciais inválidas. Verifique seu nome e senha.',
+        message: errorData.message || 'Credenciais inválidas. Verifique seu email e senha.',
         errors: {},
       };
     }
