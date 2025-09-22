@@ -83,7 +83,7 @@ export function LoginForm() {
             className="rounded-full"
             data-ai-hint="logo logistics"
           />
-          <CardTitle className="text-4xl font-bold tracking-wider text-foreground">LogiDesk</CardTitle>
+          <CardTitle className="text-4xl font-bold tracking-wider text-foreground">Login do Motorista</CardTitle>
           <p className="text-lg text-primary font-semibold pt-4">Acesso do Motorista</p>
         </CardHeader>
         <CardContent className="grid gap-6 mt-4">
