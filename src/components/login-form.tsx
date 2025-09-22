@@ -84,7 +84,7 @@ export function LoginForm() {
             data-ai-hint="logo logistics"
           />
           <CardTitle className="text-4xl font-bold tracking-wider text-foreground">LogiDesk</CardTitle>
-          <p className="text-lg text-primary font-semibold pt-4">Motorista</p>
+          <p className="text-lg text-primary font-semibold pt-4">LogiDesk</p>
         </CardHeader>
         <CardContent className="grid gap-6 mt-4">
           <div className="grid gap-2 text-left">
