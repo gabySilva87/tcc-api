@@ -6,7 +6,7 @@ import { z } from 'zod';
 // Define o schema de validação para os dados do formulário de login usando Zod.
 // Isso garante que os dados tenham o formato esperado antes de prosseguir.
 const loginSchema = z.object({
-  nome: z.string().min(1, { message: 'Por favor, insira seu nome.' }),
+  username: z.string().min(1, { message: 'Por favor, insira seu nome de usuário.' }),
   cpf: z.string().min(11, { message: 'Por favor, insira um CPF válido.' }),
 });
 
@@ -28,7 +28,7 @@ export async function login(prevState: any, formData: FormData) {
   }
 
   // Se a validação for bem-sucedida, extrai os dados.
-  const { nome, cpf } = validatedFields.data;
+  const { username, cpf } = validatedFields.data;
 
   try {
     // Monta a URL da nossa própria API de login.
@@ -39,7 +39,7 @@ export async function login(prevState: any, formData: FormData) {
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ nome, cpf }),
+      body: JSON.stringify({ username, cpf }),
     });
 
     // Se a resposta da API for bem-sucedida (status 200 OK)...

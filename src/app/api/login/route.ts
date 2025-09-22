@@ -4,12 +4,12 @@ import mysql from 'mysql2/promise';
 // A função POST é acionada quando o formulário de login é enviado.
 export async function POST(request: Request) {
   // Extrai o nome e o CPF do corpo da requisição.
-  const { nome, cpf } = await request.json();
+  const { username, cpf } = await request.json();
 
   // Validação básica para garantir que ambos os campos foram enviados.
-  if (!nome || !cpf) {
+  if (!username || !cpf) {
     return NextResponse.json(
-      { success: false, message: 'Nome e CPF são obrigatórios.' },
+      { success: false, message: 'Nome de usuário e CPF são obrigatórios.' },
       { status: 400 }
     );
   }
@@ -37,7 +37,7 @@ export async function POST(request: Request) {
     // que corresponda ao nome e CPF fornecidos.
     const [rows] = await connection.execute(
       'SELECT * FROM tb_motorista WHERE nm_motorista = ? AND nr_cpf = ?',
-      [nome, cpf]
+      [username, cpf]
     );
 
     // =======================================================================
