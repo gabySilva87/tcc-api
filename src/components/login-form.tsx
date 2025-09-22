@@ -24,12 +24,20 @@ const LogiDeskLogo = () => (
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
     >
-        <path d="M24 16L16 20V28L24 32L32 28V20L24 16Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-        <path d="M16 20L8 16L16 12L24 16" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-        <path d="M32 28L40 32L32 36L24 32" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-        <path d="M32 20L40 16L32 12L24 16" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-        <path d="M8 16V32L16 36V28" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-        <path d="M40 32V16L32 12V20" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+      <path d="M24 8L12 14V26L24 32L36 26V14L24 8Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+      <path d="M24 18V26" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+      <path d="M24 32L12 26" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+      <path d="M24 32L36 26" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+      <path d="M12 14L24 8L36 14" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+      <path d="M30,11L24,14L18,11" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M18 11L12 14V26L18 29" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M18 29L24 32L30 29" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M30 29L36 26V14L30 11" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M24,14V20" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M18,17L24,20L30,17" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M18 23L24 26L30 23" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M18 17V23" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M30 17V23" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
     </svg>
 );
 
@@ -65,24 +73,24 @@ export function LoginForm() {
   }, [state, toast]);
 
   return (
-    <Card className="w-full max-w-sm shadow-none border-none">
+    <Card className="w-full max-w-sm shadow-none border-none bg-transparent">
       <form action={formAction}>
-        <CardHeader className="text-center items-center space-y-4">
+        <CardHeader className="text-center items-center space-y-2">
           <LogiDeskLogo />
-          <CardTitle className="text-3xl font-bold tracking-wider text-foreground">LogiDesk</CardTitle>
-          <p className="text-lg text-primary font-semibold">Motorista</p>
+          <CardTitle className="text-4xl font-bold tracking-wider text-foreground">LogiDesk</CardTitle>
+          <p className="text-lg text-primary font-semibold pt-4">Motorista</p>
         </CardHeader>
         <CardContent className="grid gap-6 mt-4">
           <div className="grid gap-2 text-left">
-            <Label htmlFor="email">Email</Label>
-            <Input id="email" type="email" name="email" required aria-describedby='email-error' className="bg-input border-none rounded-full px-5 py-6" />
+            <Label htmlFor="email">Nome</Label>
+            <Input id="email" type="email" name="email" required aria-describedby='email-error' className="bg-input border-none rounded-full px-5 py-6 text-background" />
             <div id="email-error" aria-live="polite" aria-atomic="true">
               {state?.errors?.email && <p className="text-sm font-medium text-destructive">{state.errors.email[0]}</p>}
             </div>
           </div>
           <div className="grid gap-2 text-left">
             <Label htmlFor="senha">Senha</Label>
-            <Input id="senha" type="password" name="senha" required aria-describedby='senha-error' className="bg-input border-none rounded-full px-5 py-6"/>
+            <Input id="senha" type="password" name="senha" required aria-describedby='senha-error' className="bg-input border-none rounded-full px-5 py-6 text-background"/>
             <div id="senha-error" aria-live="polite" aria-atomic="true">
              {state?.errors?.senha && <p className="text-sm font-medium text-destructive">{state.errors.senha[0]}</p>}
             </div>
