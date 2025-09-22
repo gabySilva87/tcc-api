@@ -1,12 +1,11 @@
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { MapPin, Bell, LogOut } from "lucide-react";
+import { MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
-import { logout } from "@/app/actions";
 import Image from "next/image";
 import RouteNotifications from "@/components/route-notifications";
+import { LogoutButton } from "@/components/logout-button";
 
 export default function DashboardPage() {
   return (
@@ -30,11 +29,7 @@ export default function DashboardPage() {
                 <AvatarImage src="https://picsum.photos/seed/driver/100/100" alt="Usuário" data-ai-hint="driver portrait" />
                 <AvatarFallback>DR</AvatarFallback>
               </Avatar>
-              <form action={logout}>
-                <Button variant="ghost" size="icon" type="submit" aria-label="Sair">
-                  <LogOut className="h-5 w-5" />
-                </Button>
-              </form>
+              <LogoutButton />
             </div>
           </div>
         </div>

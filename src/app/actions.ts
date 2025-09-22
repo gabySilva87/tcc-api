@@ -1,6 +1,8 @@
 'use server';
 
 import { z } from 'zod';
+import { redirect } from 'next/navigation';
+import { revalidatePath } from 'next/cache';
 
 // Define o schema de validação para os dados do formulário de login usando Zod.
 // Isso garante que os dados tenham o formato esperado antes de prosseguir.
@@ -72,8 +74,11 @@ export async function login(prevState: any, formData: FormData) {
 }
 
 // Server Action para fazer o logout do usuário.
-// O redirect aqui funciona bem porque é chamado diretamente de um formulário simples.
 export async function logout() {
-  const { redirect } = await import('next/navigation');
-  redirect('/');
+  // Em um app real, você invalidaria a sessão/cookie aqui.
+  
+  // Limpa o cache da rota do dashboard para garantir que o usuário precise logar de novo.
+  revalidatePath('/dashboard');
+  
+  // O redirecionamento será tratado no cliente que chama esta action.
 }
