@@ -72,7 +72,7 @@ export default function DashboardPage() {
                <div className="mt-4 space-y-3">
                 <p className="flex justify-between items-center text-sm"><strong>Horário:</strong> <span>14:00</span></p>
                 <p className="flex justify-between items-center text-sm"><strong>Endereço:</strong> <span>Rua Principal, 123</span></p>
-                <p className="flex justify-between items-center text-sm"><strong>Status:</strong> <Badge variant="outline" className="text-green-600 border-green-600">Pendente</Badge></p>
+                <p className="flex justify-between items-center text-sm"><strong>Status:</strong> <Badge variant="success">Pendente</Badge></p>
                </div>
                <Button className="w-full mt-6 bg-primary hover:bg-primary/90 text-primary-foreground">Iniciar Rota</Button>
             </CardContent>
