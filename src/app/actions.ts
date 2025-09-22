@@ -22,13 +22,31 @@ export async function login(prevState: any, formData: FormData) {
 
   const { nome, senha } = validatedFields.data;
 
-  // Lógica de autenticação de teste
-  if (nome === 'driver' && senha === 'password') {
-    redirect('/dashboard');
-  } else {
+  try {
+    // Note: This URL needs to be absolute for server-side fetch.
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:9002';
+    const response = await fetch(`${baseUrl}/api/login`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ nome, senha }),
+    });
+
+    if (response.ok) {
+      redirect('/dashboard');
+    } else {
+      const errorData = await response.json();
+      return {
+        ...prevState,
+        message: errorData.message || 'Credenciais inválidas. Verifique seu nome e senha.',
+        errors: {},
+      };
+    }
+  } catch (error) {
     return {
       ...prevState,
-      message: 'Credenciais inválidas. Verifique seu nome e senha.',
+      message: 'Ocorreu um erro de rede. Tente novamente mais tarde.',
       errors: {},
     };
   }
