@@ -11,6 +11,7 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/componen
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Loader2 } from 'lucide-react';
+import Image from 'next/image';
 
 // Estado inicial para a Server Action. `message` guarda mensagens de erro globais,
 // e `errors` guarda erros específicos de cada campo do formulário.
@@ -19,23 +20,6 @@ const initialState = {
   message: null,
   errors: {},
 };
-
-// Componente para o logotipo da aplicação.
-const LogiDeskLogo = () => (
-    <svg
-      className="w-20 h-20 text-primary"
-      viewBox="0 0 48 48"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-    >
-        <path d="M24 16L16 20V28L24 32L32 28V20L24 16Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-        <path d="M16 20L8 16L16 12L24 16" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-        <path d="M32 28L40 32L32 36L24 32" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-        <path d="M32 20L40 16L32 12L24 16" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-        <path d="M8 16V32L16 36V28" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-        <path d="M40 32V16L32 12V20" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-    </svg>
-);
 
 // Componente do botão de submit, que mostra um ícone de carregamento
 // enquanto o formulário está sendo enviado.
@@ -91,7 +75,14 @@ export function LoginForm() {
       {/* O atributo `action` do formulário aponta para a nossa Server Action. */}
       <form action={formAction}>
         <CardHeader className="text-center items-center space-y-2">
-          <LogiDeskLogo />
+          <Image
+            src="https://picsum.photos/seed/logo/80/80"
+            alt="LogiDesk Logo"
+            width={80}
+            height={80}
+            className="rounded-full"
+            data-ai-hint="logo logistics"
+          />
           <CardTitle className="text-4xl font-bold tracking-wider text-foreground">LogiDesk</CardTitle>
           <p className="text-lg text-primary font-semibold pt-4">Motorista</p>
         </CardHeader>

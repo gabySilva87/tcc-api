@@ -8,22 +8,6 @@ import { logout } from "@/app/actions";
 import Image from "next/image";
 import RouteNotifications from "@/components/route-notifications";
 
-const LogiDeskLogo = () => (
-    <svg
-      className="w-8 h-8 text-primary"
-      viewBox="0 0 48 48"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-    >
-        <path d="M24 16L16 20V28L24 32L32 28V20L24 16Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-        <path d="M16 20L8 16L16 12L24 16" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-        <path d="M32 28L40 32L32 36L24 32" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-        <path d="M32 20L40 16L32 12L24 16" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-        <path d="M8 16V32L16 36V28" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-        <path d="M40 32V16L32 12V20" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-    </svg>
-);
-
 export default function DashboardPage() {
   return (
     <div className="min-h-screen bg-secondary/50">
@@ -31,7 +15,14 @@ export default function DashboardPage() {
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center gap-4">
-              <LogiDeskLogo />
+              <Image
+                src="https://picsum.photos/seed/logo/40/40"
+                alt="LogiDesk Logo"
+                width={40}
+                height={40}
+                className="rounded-full"
+                data-ai-hint="logo logistics"
+              />
               <h1 className="text-xl font-bold text-foreground">Driver Dashboard</h1>
             </div>
             <div className="flex items-center gap-2">
