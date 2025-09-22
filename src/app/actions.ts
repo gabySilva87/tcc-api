@@ -5,7 +5,7 @@ import { z } from 'zod';
 
 const loginSchema = z.object({
   email: z.string().email({ message: 'Por favor, insira um email válido.' }),
-  senha: z.string().min(1, { message: 'Por favor, insira sua senha.' }),
+  cpf: z.string().min(11, { message: 'Por favor, insira um CPF válido.' }),
 });
 
 export async function login(prevState: any, formData: FormData) {
@@ -20,26 +20,27 @@ export async function login(prevState: any, formData: FormData) {
     };
   }
 
-  const { email, senha } = validatedFields.data;
+  const { email, cpf } = validatedFields.data;
 
   try {
-    // Note: This URL needs to be absolute for server-side fetch.
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:9002';
     const response = await fetch(`${baseUrl}/api/login`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ email, senha }),
+      body: JSON.stringify({ email, cpf }),
     });
 
     if (response.ok) {
+      // For a real app, you would set a session cookie here.
+      // For this example, we'll just redirect.
       redirect('/dashboard');
     } else {
       const errorData = await response.json();
       return {
         ...prevState,
-        message: errorData.message || 'Credenciais inválidas. Verifique seu email e senha.',
+        message: errorData.message || 'Credenciais inválidas. Verifique seu email e CPF.',
         errors: {},
       };
     }
@@ -53,5 +54,6 @@ export async function login(prevState: any, formData: FormData) {
 }
 
 export async function logout() {
+  // In a real app with session management, you would clear the session here.
   redirect('/');
 }
