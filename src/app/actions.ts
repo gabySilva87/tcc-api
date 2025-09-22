@@ -4,8 +4,8 @@ import { redirect } from 'next/navigation';
 import { z } from 'zod';
 
 const loginSchema = z.object({
-  email: z.string().email({ message: 'Por favor, insira um email válido.' }),
-  cpf: z.string().min(1, { message: 'Por favor, insira seu CPF.' }),
+  nome: z.string().min(1, { message: 'Por favor, insira seu nome.' }),
+  senha: z.string().min(1, { message: 'Por favor, insira sua senha.' }),
 });
 
 export async function login(prevState: any, formData: FormData) {
@@ -20,16 +20,17 @@ export async function login(prevState: any, formData: FormData) {
     };
   }
 
-  const { email, cpf } = validatedFields.data;
+  const { nome, senha } = validatedFields.data;
 
   await new Promise((resolve) => setTimeout(resolve, 1000));
   
-  if (email === 'driver@example.com' && cpf === '123.456.789-00') {
+  // Example validation. Replace with your actual authentication logic.
+  if (nome === 'driver' && senha === 'password') {
     redirect('/dashboard');
   } else {
     return {
       ...prevState,
-      message: 'Credenciais inválidas. Verifique seu email e CPF.',
+      message: 'Credenciais inválidas. Verifique seu nome e senha.',
     };
   }
 }

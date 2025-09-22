@@ -6,15 +6,62 @@ import { useToast } from '@/hooks/use-toast';
 import { login } from '@/app/actions';
 
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { KeyRound, Loader2 } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 
 const initialState = {
   message: null,
   errors: {},
 };
+
+const LogiDeskLogo = () => (
+  <svg
+    className="w-20 h-20 text-primary"
+    viewBox="0 0 68 59"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <path
+      d="M33.9999 19.6667V-2.62268e-05L50.9999 9.83331V29.5L33.9999 19.6667Z"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinejoin="round"
+    />
+    <path
+      d="M17 9.83331L34 19.6666L17 29.5V9.83331Z"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinejoin="round"
+    />
+    <path
+      d="M34 39.3333L17 29.5L0 39.3333L17 49.1666L34 39.3333Z"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinejoin="round"
+    />
+    <path
+      d="M34 39.3333V59L51 49.1667V29.5L34 39.3333Z"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinejoin="round"
+    />
+    <path
+      d="M51 49.1667L68 39.3334L51 29.5"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinejoin="round"
+    />
+    <path
+      d="M34 19.6667L51 29.5"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinejoin="round"
+    />
+  </svg>
+);
+
 
 function SubmitButton() {
   const { pending } = useFormStatus();
@@ -22,8 +69,9 @@ function SubmitButton() {
   return (
     <Button 
       type="submit" 
-      className="w-full bg-[#4CAF50] hover:bg-[#4CAF50]/90 text-white"
+      className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-bold rounded-full"
       disabled={pending}
+      size="lg"
     >
       {pending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
       Entrar
@@ -46,32 +94,30 @@ export function LoginForm() {
   }, [state, toast]);
 
   return (
-    <Card className="w-full max-w-sm shadow-lg">
+    <Card className="w-full max-w-sm shadow-none border-none">
       <form action={formAction}>
-        <CardHeader className="text-center">
-          <div className="mx-auto bg-primary/10 p-3 rounded-full w-fit">
-            <KeyRound className="w-8 h-8 text-primary" />
-          </div>
-          <CardTitle className="text-2xl font-headline mt-4">Driver Login</CardTitle>
-          <CardDescription>Acesse sua rota e notificações.</CardDescription>
+        <CardHeader className="text-center items-center space-y-4">
+          <LogiDeskLogo />
+          <CardTitle className="text-3xl font-bold tracking-wider text-foreground">LogiDesk</CardTitle>
+          <p className="text-lg text-primary font-semibold">Motorista</p>
         </CardHeader>
-        <CardContent className="grid gap-4">
-          <div className="grid gap-2">
-            <Label htmlFor="email">Email</Label>
-            <Input id="email" type="email" name="email" placeholder="motorista@exemplo.com" required aria-describedby='email-error' />
-            <div id="email-error" aria-live="polite" aria-atomic="true">
-              {state?.errors?.email && <p className="text-sm font-medium text-destructive">{state.errors.email[0]}</p>}
+        <CardContent className="grid gap-6 mt-4">
+          <div className="grid gap-2 text-left">
+            <Label htmlFor="nome">Nome</Label>
+            <Input id="nome" type="text" name="nome" required aria-describedby='nome-error' className="bg-input border-none rounded-full px-5 py-6" />
+            <div id="nome-error" aria-live="polite" aria-atomic="true">
+              {state?.errors?.nome && <p className="text-sm font-medium text-destructive">{state.errors.nome[0]}</p>}
             </div>
           </div>
-          <div className="grid gap-2">
-            <Label htmlFor="cpf">CPF</Label>
-            <Input id="cpf" type="text" name="cpf" placeholder="123.456.789-00" required aria-describedby='cpf-error'/>
-            <div id="cpf-error" aria-live="polite" aria-atomic="true">
-             {state?.errors?.cpf && <p className="text-sm font-medium text-destructive">{state.errors.cpf[0]}</p>}
+          <div className="grid gap-2 text-left">
+            <Label htmlFor="senha">Senha</Label>
+            <Input id="senha" type="password" name="senha" required aria-describedby='senha-error' className="bg-input border-none rounded-full px-5 py-6"/>
+            <div id="senha-error" aria-live="polite" aria-atomic="true">
+             {state?.errors?.senha && <p className="text-sm font-medium text-destructive">{state.errors.senha[0]}</p>}
             </div>
           </div>
         </CardContent>
-        <CardFooter>
+        <CardFooter className="mt-4">
           <SubmitButton />
         </CardFooter>
       </form>
