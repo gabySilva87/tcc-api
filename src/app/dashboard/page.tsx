@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { MapPin, Bell, LogOut, Truck } from "lucide-react";
+import { MapPin, Bell, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
@@ -31,6 +31,52 @@ const notifications = [
   },
 ];
 
+const LogiDeskLogo = () => (
+    <svg
+      className="w-8 h-8 text-primary"
+      viewBox="0 0 68 59"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <path
+        d="M33.9999 19.6667V-2.62268e-05L50.9999 9.83331V29.5L33.9999 19.6667Z"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M17 9.83331L34 19.6666L17 29.5V9.83331Z"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M34 39.3333L17 29.5L0 39.3333L17 49.1666L34 39.3333Z"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M34 39.3333V59L51 49.1667V29.5L34 39.3333Z"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M51 49.1667L68 39.3334L51 29.5"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M34 19.6667L51 29.5"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+
 export default function DashboardPage() {
   return (
     <div className="min-h-screen bg-secondary/50">
@@ -38,8 +84,8 @@ export default function DashboardPage() {
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center gap-4">
-              <Truck className="h-8 w-8 text-primary" />
-              <h1 className="text-xl font-bold text-foreground">DriverAuthFlow</h1>
+              <LogiDeskLogo />
+              <h1 className="text-xl font-bold text-foreground">Driver Dashboard</h1>
             </div>
             <div className="flex items-center gap-2">
                <Avatar>
@@ -109,7 +155,7 @@ export default function DashboardPage() {
                 <p className="flex justify-between items-center text-sm"><strong>Endereço:</strong> <span>Rua Principal, 123</span></p>
                 <p className="flex justify-between items-center text-sm"><strong>Status:</strong> <Badge variant="outline" className="text-green-600 border-green-600">Pendente</Badge></p>
                </div>
-               <Button className="w-full mt-6 bg-[#4CAF50] hover:bg-[#4CAF50]/90 text-white">Iniciar Rota</Button>
+               <Button className="w-full mt-6 bg-primary hover:bg-primary/90 text-primary-foreground">Iniciar Rota</Button>
             </CardContent>
           </Card>
         </div>
