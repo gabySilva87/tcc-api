@@ -1,6 +1,8 @@
+'use client';
+
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import Image from "next/image";
@@ -8,6 +10,16 @@ import RouteNotifications from "@/components/route-notifications";
 import { LogoutButton } from "@/components/logout-button";
 
 export default function DashboardPage() {
+  const [driverName, setDriverName] = useState('');
+
+  useEffect(() => {
+    // Busca o nome do motorista do sessionStorage quando o componente é montado no cliente.
+    const name = sessionStorage.getItem('driverName');
+    if (name) {
+      setDriverName(name);
+    }
+  }, []);
+
   return (
     <div className="min-h-screen bg-secondary/50">
       <header className="bg-card border-b sticky top-0 z-10">
@@ -27,7 +39,7 @@ export default function DashboardPage() {
             <div className="flex items-center gap-2">
                <Avatar>
                 <AvatarImage src="https://picsum.photos/seed/driver/100/100" alt="Usuário" data-ai-hint="driver portrait" />
-                <AvatarFallback>DR</AvatarFallback>
+                <AvatarFallback>{driverName.charAt(0) || 'D'}</AvatarFallback>
               </Avatar>
               <LogoutButton />
             </div>
@@ -37,7 +49,8 @@ export default function DashboardPage() {
 
       <main className="container mx-auto p-4 sm:p-6 lg:p-8">
         <div className="mb-8">
-          <h2 className="text-3xl font-bold tracking-tight text-foreground">Bem-vindo, Motorista!</h2>
+          {/* O nome do motorista é exibido dinamicamente aqui. */}
+          <h2 className="text-3xl font-bold tracking-tight text-foreground">Bem-vindo, {driverName || 'Motorista'}!</h2>
           <p className="text-muted-foreground">Aqui estão suas atualizações mais recentes.</p>
         </div>
 

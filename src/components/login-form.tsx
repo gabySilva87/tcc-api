@@ -13,16 +13,13 @@ import { Label } from '@/components/ui/label';
 import { Loader2 } from 'lucide-react';
 import Image from 'next/image';
 
-// Estado inicial para a Server Action. `message` guarda mensagens de erro globais,
-// e `errors` guarda erros específicos de cada campo do formulário.
 const initialState = {
   success: false,
   message: null,
   errors: {},
+  driverName: null,
 };
 
-// Componente do botão de submit, que mostra um ícone de carregamento
-// enquanto o formulário está sendo enviado.
 function SubmitButton() {
   const { pending } = useFormStatus();
 
@@ -39,28 +36,24 @@ function SubmitButton() {
   );
 }
 
-// Componente principal do formulário de login.
 export function LoginForm() {
   const router = useRouter();
   const { toast } = useToast();
-  // `useActionState` é um hook do React para gerenciar o estado de formulários que usam Server Actions.
-  // `state` contém as respostas da action (erros, mensagens), e `formAction` é o que aciona a action.
   const [state, formAction] = useActionState(login, initialState);
 
-  // `useEffect` para observar mudanças no estado e exibir toasts ou redirecionar.
   useEffect(() => {
-    // Se a action retornar sucesso, redireciona para o dashboard.
-    if (state?.success) {
+    if (state?.success && state?.driverName) {
       toast({
         title: 'Sucesso!',
         description: state.message,
       });
-      // Adiciona um pequeno delay para o usuário ver o toast antes de redirecionar.
+      // Salva o nome do motorista no sessionStorage antes de redirecionar.
+      sessionStorage.setItem('driverName', state.driverName);
+      
       setTimeout(() => {
         router.push('/dashboard');
       }, 500);
     } 
-    // Se retornar um erro, exibe o toast de erro.
     else if (state?.message && state.message !== 'Dados inválidos.') {
       toast({
         variant: 'destructive',
@@ -72,7 +65,6 @@ export function LoginForm() {
 
   return (
     <Card className="w-full max-w-sm shadow-none border-none bg-transparent">
-      {/* O atributo `action` do formulário aponta para a nossa Server Action. */}
       <form action={formAction}>
         <CardHeader className="text-center items-center space-y-2">
           <Image
@@ -90,7 +82,6 @@ export function LoginForm() {
           <div className="grid gap-2 text-left">
             <Label htmlFor="email">Email</Label>
             <Input id="email" type="email" name="email" required aria-describedby='email-error' className="bg-input border-none rounded-full px-5 py-6 text-background" />
-            {/* Área para exibir mensagens de erro específicas do campo de email. */}
             <div id="email-error" aria-live="polite" aria-atomic="true">
               {state?.errors?.email && <p className="text-sm font-medium text-destructive">{state.errors.email[0]}</p>}
             </div>
@@ -98,7 +89,6 @@ export function LoginForm() {
           <div className="grid gap-2 text-left">
             <Label htmlFor="senha">Senha</Label>
             <Input id="senha" type="password" name="senha" required aria-describedby='senha-error' className="bg-input border-none rounded-full px-5 py-6 text-background"/>
-            {/* Área para exibir mensagens de erro específicas do campo de senha. */}
             <div id="senha-error" aria-live="polite" aria-atomic="true">
              {state?.errors?.senha && <p className="text-sm font-medium text-destructive">{state.errors.senha[0]}</p>}
             </div>

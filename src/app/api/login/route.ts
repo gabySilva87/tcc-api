@@ -19,8 +19,6 @@ export async function POST(request: Request) {
     // =======================================================================
     // PASSO 1: CONEXÃO COM O BANCO DE DADOS MYSQL
     // =======================================================================
-    // As credenciais são lidas de forma segura a partir de variáveis de ambiente
-    // do seu arquivo .env.local. A opção SSL é adicionada para compatibilidade.
     connection = await mysql.createConnection({
       host: process.env.DB_HOST,
       port: Number(process.env.DB_PORT),
@@ -33,33 +31,27 @@ export async function POST(request: Request) {
     // =======================================================================
     // PASSO 2: CONSULTA SQL PARA VERIFICAR AS CREDENCIAIS
     // =======================================================================
-    // Executa uma consulta na tabela `tb_motorista` para encontrar um motorista
-    // que corresponda ao email e senha fornecidos.
     const [rows] = await connection.execute(
-      'SELECT * FROM tb_motorista WHERE nm_email = ? AND nm_senha = ?',
+      'SELECT nm_motorista FROM tb_motorista WHERE nm_email = ? AND nm_senha = ?',
       [email, senha]
     );
 
     // =======================================================================
     // PASSO 3: AVALIAÇÃO DO RESULTADO E RESPOSTA
     // =======================================================================
-    // Se a consulta retornar pelo menos uma linha, significa que o motorista foi encontrado.
     if (Array.isArray(rows) && rows.length > 0) {
-      // Login bem-sucedido. Em um aplicativo real, aqui você geraria um token de sessão (JWT).
-      return NextResponse.json({ success: true, message: 'Login bem-sucedido!' });
+      const driver = (rows as any)[0];
+      // Retorna sucesso e o nome do motorista.
+      return NextResponse.json({ success: true, message: 'Login bem-sucedido!', driverName: driver.nm_motorista });
     } else {
-      // Se nenhuma linha for encontrada, as credenciais são inválidas.
       return NextResponse.json(
         { success: false, message: 'Credenciais inválidas. Verifique seu email e senha.' },
         { status: 401 }
       );
     }
   } catch (error: any) {
-    // Em caso de erro (ex: falha na conexão com o banco), loga o erro no console
-    // e retorna uma resposta de erro genérica e mais informativa.
-    console.error('[ERRO NA API DE LOGIN]:', error); // Log detalhado do erro no terminal
-    
-    // Verificar se o erro é de conexão
+    console.error('[ERRO NA API DE LOGIN]:', error);
+
     if (error.code === 'ECONNREFUSED' || error.code === 'ENOTFOUND') {
          return NextResponse.json(
             { success: false, message: `Não foi possível conectar ao servidor de banco de dados em '${process.env.DB_HOST}'. Verifique o DB_HOST e a porta.` },
@@ -83,11 +75,6 @@ export async function POST(request: Request) {
       { status: 500 }
     );
   } finally {
-    // =======================================================================
-    // PASSO 4: FECHAR A CONEXÃO
-    // =======================================================================
-    // Garante que a conexão com o banco de dados seja sempre fechada,
-    // independentemente de sucesso ou falha.
     if (connection) {
       await connection.end();
     }
