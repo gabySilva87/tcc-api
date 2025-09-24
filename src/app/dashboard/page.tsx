@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect } from "react";
@@ -27,7 +28,7 @@ export default function DashboardPage() {
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center gap-4">
               <Image
-                src="https://picsum.photos/seed/logo/40/40"
+                src="/logo.png"
                 alt="LogiDesk Logo"
                 width={40}
                 height={40}
