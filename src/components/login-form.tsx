@@ -65,8 +65,8 @@ export function LoginForm() {
   return (
     <Card className="w-full max-w-sm shadow-none border-none bg-transparent">
       <form action={formAction}>
-        <CardHeader className="flex flex-row items-center space-x-4">
-          <div className="w-[60px] h-[60px] md:w-[80px] md:h-[80px] relative">
+        <CardHeader className="flex flex-col items-center text-center space-y-4">
+          <div className="w-[80px] h-[80px] md:w-[100px] md:h-[100px] relative">
             <Image
               src="/logo.png"
               alt="LogiDesk Logo"
@@ -75,8 +75,8 @@ export function LoginForm() {
             />
           </div>
           <div className="flex flex-col">
-            <CardTitle className="text-2xl md:text-4xl font-bold tracking-wider text-foreground">LogiDesk</CardTitle>
-            <p className="text-sm md:text-lg text-primary font-semibold">Motorista</p>
+            <CardTitle className="text-3xl md:text-4xl font-bold tracking-wider text-foreground">LogiDesk</CardTitle>
+            <p className="text-base md:text-lg text-primary font-semibold">Motorista</p>
           </div>
         </CardHeader>
         <CardContent className="grid gap-6 mt-4">
