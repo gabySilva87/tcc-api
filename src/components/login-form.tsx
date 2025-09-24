@@ -101,16 +101,16 @@ export function LoginForm() {
           <p className="text-base md:text-lg text-primary font-semibold pt-4">Motorista</p>
         </CardHeader>
         <CardContent className="grid gap-6 mt-4">
-          <div className="grid gap-2 text-left">
-            <Label htmlFor="email">Email</Label>
+          <div className="grid gap-2">
+            <Label htmlFor="email" className="text-left">Email</Label>
             <Input id="email" type="email" name="email" required aria-describedby='email-error' className="bg-input border-none rounded-full px-5 py-6 text-background" />
             {/* Área para exibir mensagens de erro específicas do campo de email, se houver. */}
             <div id="email-error" aria-live="polite" aria-atomic="true">
               {state?.errors?.email && <p className="text-sm font-medium text-destructive">{state.errors.email[0]}</p>}
             </div>
           </div>
-          <div className="grid gap-2 text-left">
-            <Label htmlFor="senha">Senha</Label>
+          <div className="grid gap-2">
+            <Label htmlFor="senha" className="text-left">Senha</Label>
             <Input id="senha" type="password" name="senha" required aria-describedby='senha-error' className="bg-input border-none rounded-full px-5 py-6 text-background"/>
             {/* Área para exibir mensagens de erro específicas do campo de senha, se houver. */}
             <div id="senha-error" aria-live="polite" aria-atomic="true">
