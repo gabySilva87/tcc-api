@@ -6,8 +6,8 @@ import { revalidatePath } from 'next/cache';
 
 // Define o schema de validação para os dados do formulário de login usando Zod.
 const loginSchema = z.object({
-  email: z.string().email({ message: 'Por favor, insira um email válido.' }),
-  senha: z.string().min(1, { message: 'Por favor, insira sua senha.' }),
+  email: z.string().min(1, { message: 'O campo de email é obrigatório.'}).email({ message: 'Por favor, insira um email válido.' }),
+  senha: z.string().min(6, { message: 'A senha deve ter pelo menos 6 caracteres.' }),
 });
 
 export async function login(prevState: any, formData: FormData) {
