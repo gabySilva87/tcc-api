@@ -6,8 +6,8 @@ import { revalidatePath } from 'next/cache';
 
 // Define o schema de validação para os dados do formulário de login usando Zod.
 const loginSchema = z.object({
-  email: z.string().min(1, { message: 'O campo de email é obrigatório.'}).email({ message: 'Por favor, insira um email válido.' }),
-  senha: z.string().min(6, { message: 'A senha deve ter pelo menos 6 caracteres.' }),
+  cpf: z.string().min(11, { message: 'O CPF deve ter pelo menos 11 caracteres.'}),
+  senha: z.string().min(1, { message: 'O campo de senha é obrigatório.' }),
 });
 
 export async function login(prevState: any, formData: FormData) {
@@ -23,7 +23,7 @@ export async function login(prevState: any, formData: FormData) {
     };
   }
 
-  const { email, senha } = validatedFields.data;
+  const { cpf, senha } = validatedFields.data;
 
   try {
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:9002';
@@ -32,7 +32,7 @@ export async function login(prevState: any, formData: FormData) {
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ email, senha }),
+      body: JSON.stringify({ cpf, senha }),
     });
 
     const responseData = await response.json();
@@ -48,7 +48,7 @@ export async function login(prevState: any, formData: FormData) {
     } else {
       return {
         success: false,
-        message: responseData.message || 'Credenciais inválidas. Verifique seu email e senha.',
+        message: responseData.message || 'Credenciais inválidas. Verifique seu CPF e senha.',
         errors: {},
       };
     }
