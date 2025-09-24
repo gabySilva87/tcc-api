@@ -6,6 +6,7 @@ import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { Bell, MapPin, AlertTriangle } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 // Interface para definir a estrutura de dados de uma rota/notificação.
 interface Route {
@@ -116,24 +117,26 @@ export default function RouteNotifications() {
       </CardHeader>
       <CardContent>
         {routes.length > 0 ? (
-          <ul className="space-y-4">
-            {routes.map((notification, index) => (
-              <li key={notification.id}>
-                <div className="flex gap-4 items-start">
-                  <div className="flex-shrink-0 pt-1.5">
-                    <span className={`block h-2.5 w-2.5 rounded-full ${!notification.read ? 'bg-primary animate-pulse' : 'bg-muted'}`} />
+          <ScrollArea className="h-72">
+            <ul className="space-y-4 pr-4">
+              {routes.map((notification, index) => (
+                <li key={notification.id}>
+                  <div className="flex gap-4 items-start">
+                    <div className="flex-shrink-0 pt-1.5">
+                      <span className={`block h-2.5 w-2.5 rounded-full ${!notification.read ? 'bg-primary animate-pulse' : 'bg-muted'}`} />
+                    </div>
+                    <div className="flex-1">
+                      <p className="font-semibold">{notification.title}</p>
+                      <p className="text-sm text-muted-foreground">{notification.description}</p>
+                      <p className="text-xs text-muted-foreground/80 mt-1">{notification.time}</p>
+                    </div>
+                    <MapPin className="w-5 h-5 text-muted-foreground flex-shrink-0 mt-1" />
                   </div>
-                  <div className="flex-1">
-                    <p className="font-semibold">{notification.title}</p>
-                    <p className="text-sm text-muted-foreground">{notification.description}</p>
-                    <p className="text-xs text-muted-foreground/80 mt-1">{notification.time}</p>
-                  </div>
-                  <MapPin className="w-5 h-5 text-muted-foreground flex-shrink-0 mt-1" />
-                </div>
-                {index < routes.length - 1 && <Separator className="mt-4" />}
-              </li>
-            ))}
-          </ul>
+                  {index < routes.length - 1 && <Separator className="mt-4" />}
+                </li>
+              ))}
+            </ul>
+          </ScrollArea>
         ) : (
           <p className="text-muted-foreground">Nenhuma notificação no momento.</p>
         )}
