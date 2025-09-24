@@ -90,11 +90,12 @@ export function LoginForm() {
         <CardHeader className="text-center items-center space-y-2">
           {/* Componente `Image` do Next.js para otimização de imagem. */}
           <Image
-              src="/logo.png"
+              src="https://picsum.photos/seed/logo/200/200"
               alt="LogiDesk Logo"
               width={200}
               height={200}
               className="object-contain"
+              data-ai-hint="logo logistics"
             />
 
           <CardTitle className="text-4xl font-bold tracking-wider text-foreground">LogiDesk</CardTitle>
