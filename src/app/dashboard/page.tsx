@@ -38,8 +38,8 @@ export default function DashboardPage() {
             </div>
             <div className="flex items-center gap-3">
                <Avatar>
-                <AvatarImage src="https://picsum.photos/seed/driver/100/100" alt="Usuário" data-ai-hint="driver portrait" />
-                <AvatarFallback>{driverName.charAt(0) || 'D'}</AvatarFallback>
+                <AvatarImage src="https://picsum.photos/seed/driver/100/100" alt="Motorista" data-ai-hint="driver portrait" />
+                <AvatarFallback>{driverName ? driverName.charAt(0) : 'M'}</AvatarFallback>
               </Avatar>
               <p className="text-sm font-medium text-foreground hidden sm:block truncate">{driverName}</p>
               <LogoutButton />
