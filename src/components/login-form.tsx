@@ -90,7 +90,7 @@ export function LoginForm() {
         <CardHeader className="text-center items-center space-y-2">
           {/* Componente `Image` do Next.js para otimização de imagem. */}
           <Image
-              src="https://picsum.photos/seed/logo/200/200"
+              src="/logo.png"
               alt="LogiDesk Logo"
               width={200}
               height={200}
