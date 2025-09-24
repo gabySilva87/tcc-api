@@ -56,7 +56,7 @@ export default function RouteNotifications() {
   // Se os dados ainda estão sendo carregados, exibe um esqueleto (placeholders de carregamento).
   if (loading) {
     return (
-      <Card>
+      <Card className="flex-1 flex flex-col">
         <CardHeader className="flex flex-row items-center justify-between">
           <div className="flex items-center gap-3">
             <Bell className="w-6 h-6 text-primary" />
@@ -64,7 +64,7 @@ export default function RouteNotifications() {
           </div>
           <Skeleton className="h-6 w-16 rounded-full" />
         </CardHeader>
-        <CardContent>
+        <CardContent className="flex-1">
           <div className="space-y-4">
             {[...Array(3)].map((_, i) => (
               <div key={i}>
@@ -107,7 +107,7 @@ export default function RouteNotifications() {
 
   // Se os dados foram carregados com sucesso, exibe a lista de notificações.
   return (
-    <Card>
+    <Card className="flex-1 flex flex-col">
       <CardHeader className="flex flex-row items-center justify-between">
         <div className="flex items-center gap-3">
           <Bell className="w-6 h-6 text-primary" />
@@ -115,9 +115,9 @@ export default function RouteNotifications() {
         </div>
         {unreadCount > 0 && <Badge variant="default" className="bg-primary/90">{unreadCount} nova{unreadCount > 1 ? 's' : ''}</Badge>}
       </CardHeader>
-      <CardContent>
+      <CardContent className="flex-1 overflow-hidden">
         {routes.length > 0 ? (
-          <ScrollArea className="h-72">
+          <ScrollArea className="h-full">
             <ul className="space-y-4 pr-4">
               {routes.map((notification, index) => (
                 <li key={notification.id}>

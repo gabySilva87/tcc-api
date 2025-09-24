@@ -22,7 +22,7 @@ export default function DashboardPage() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-secondary/50">
+    <div className="flex flex-col min-h-screen bg-secondary/50">
       <header className="bg-card border-b sticky top-0 z-10">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
@@ -47,7 +47,7 @@ export default function DashboardPage() {
         </div>
       </header>
 
-      <main className="container mx-auto p-4 sm:p-6 lg:p-8">
+      <main className="container mx-auto p-4 sm:p-6 lg:p-8 flex-1">
         <div className="mb-8">
           {/* O nome do motorista é exibido dinamicamente aqui. */}
           <h2 className="text-3xl font-bold tracking-tight text-foreground">Bem-vindo, {driverName || 'Motorista'}!</h2>
@@ -55,7 +55,7 @@ export default function DashboardPage() {
         </div>
 
         <div className="grid gap-8 md:grid-cols-3">
-          <div className="md:col-span-2 flex flex-col gap-8">
+          <div className="md:col-span-2 flex flex-col">
             <RouteNotifications />
           </div>
           
