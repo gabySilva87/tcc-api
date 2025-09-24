@@ -68,12 +68,11 @@ export function LoginForm() {
       <form action={formAction}>
         <CardHeader className="text-center items-center space-y-2">
           <Image
-            src="https://picsum.photos/seed/logo/80/80"
+            src="/logo.png"
             alt="LogiDesk Logo"
             width={80}
             height={80}
             className="rounded-full"
-            data-ai-hint="logo logistics"
           />
           <CardTitle className="text-4xl font-bold tracking-wider text-foreground">LogiDesk</CardTitle>
           <p className="text-lg text-primary font-semibold pt-4">Motorista</p>
