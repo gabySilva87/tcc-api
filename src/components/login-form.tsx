@@ -67,13 +67,14 @@ export function LoginForm() {
     <Card className="w-full max-w-sm shadow-none border-none bg-transparent">
       <form action={formAction}>
         <CardHeader className="text-center items-center space-y-2">
-          <Image
-            src="/logo.png"
-            alt="LogiDesk Logo"
-            width={80}
-            height={80}
-            className="rounded-full"
-          />
+                      <Image
+              src="/LogiDesk-Logo.png"
+              alt="LogiDesk Logo"
+              width={200}
+              height={200}
+              className="object-contain"
+                    />
+
           <CardTitle className="text-4xl font-bold tracking-wider text-foreground">LogiDesk</CardTitle>
           <p className="text-lg text-primary font-semibold pt-4">Motorista</p>
         </CardHeader>
