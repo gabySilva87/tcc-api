@@ -7,8 +7,8 @@ import { revalidatePath } from 'next/cache';
 // Define o schema de validação para os dados do formulário de login usando Zod.
 // Isso garante que os dados tenham o formato esperado antes de prosseguir.
 const loginSchema = z.object({
-  nome: z.string().min(1, { message: 'Por favor, insira seu nome.' }),
-  cpf: z.string().min(11, { message: 'Por favor, insira um CPF válido.' }),
+  email: z.string().email({ message: 'Por favor, insira um email válido.' }),
+  senha: z.string().min(1, { message: 'Por favor, insira sua senha.' }),
 });
 
 // Esta é uma "Server Action" do Next.js. Ela é executada no servidor.
@@ -30,7 +30,7 @@ export async function login(prevState: any, formData: FormData) {
   }
 
   // Se a validação for bem-sucedida, extrai os dados.
-  const { nome, cpf } = validatedFields.data;
+  const { email, senha } = validatedFields.data;
 
   try {
     // Monta a URL da nossa própria API de login.
@@ -41,7 +41,7 @@ export async function login(prevState: any, formData: FormData) {
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ nome, cpf }),
+      body: JSON.stringify({ email, senha }),
     });
 
     // Se a resposta da API for bem-sucedida (status 200 OK)...
@@ -58,7 +58,7 @@ export async function login(prevState: any, formData: FormData) {
       // ...e retorna a mensagem para ser exibida no formulário.
       return {
         success: false,
-        message: errorData.message || 'Credenciais inválidas. Verifique seu nome e CPF.',
+        message: errorData.message || 'Credenciais inválidas. Verifique seu email e senha.',
         errors: {},
       };
     }

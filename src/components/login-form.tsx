@@ -88,19 +88,19 @@ export function LoginForm() {
         </CardHeader>
         <CardContent className="grid gap-6 mt-4">
           <div className="grid gap-2 text-left">
-            <Label htmlFor="nome">Nome</Label>
-            <Input id="nome" type="text" name="nome" required aria-describedby='nome-error' className="bg-input border-none rounded-full px-5 py-6 text-background" />
-            {/* Área para exibir mensagens de erro específicas do campo de nome. */}
-            <div id="nome-error" aria-live="polite" aria-atomic="true">
-              {state?.errors?.nome && <p className="text-sm font-medium text-destructive">{state.errors.nome[0]}</p>}
+            <Label htmlFor="email">Email</Label>
+            <Input id="email" type="email" name="email" required aria-describedby='email-error' className="bg-input border-none rounded-full px-5 py-6 text-background" />
+            {/* Área para exibir mensagens de erro específicas do campo de email. */}
+            <div id="email-error" aria-live="polite" aria-atomic="true">
+              {state?.errors?.email && <p className="text-sm font-medium text-destructive">{state.errors.email[0]}</p>}
             </div>
           </div>
           <div className="grid gap-2 text-left">
-            <Label htmlFor="cpf">CPF</Label>
-            <Input id="cpf" type="text" name="cpf" required aria-describedby='cpf-error' className="bg-input border-none rounded-full px-5 py-6 text-background"/>
-            {/* Área para exibir mensagens de erro específicas do campo de CPF. */}
-            <div id="cpf-error" aria-live="polite" aria-atomic="true">
-             {state?.errors?.cpf && <p className="text-sm font-medium text-destructive">{state.errors.cpf[0]}</p>}
+            <Label htmlFor="senha">Senha</Label>
+            <Input id="senha" type="password" name="senha" required aria-describedby='senha-error' className="bg-input border-none rounded-full px-5 py-6 text-background"/>
+            {/* Área para exibir mensagens de erro específicas do campo de senha. */}
+            <div id="senha-error" aria-live="polite" aria-atomic="true">
+             {state?.errors?.senha && <p className="text-sm font-medium text-destructive">{state.errors.senha[0]}</p>}
             </div>
           </div>
         </CardContent>

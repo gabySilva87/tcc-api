@@ -22,7 +22,7 @@ export default function DashboardPage() {
                 className="rounded-full"
                 data-ai-hint="logo logistics"
               />
-              <h1 className="text-xl font-bold text-foreground">LogiDesk</h1>
+              <h1 className="text-xl font-bold text-foreground">Driver</h1>
             </div>
             <div className="flex items-center gap-2">
                <Avatar>
