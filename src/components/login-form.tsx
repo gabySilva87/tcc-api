@@ -92,13 +92,13 @@ export function LoginForm() {
           <Image
               src="https://picsum.photos/seed/logo/200/200"
               alt="LogiDesk Logo"
-              width={200}
-              height={200}
-              className="object-contain"
+              width={150}
+              height={150}
+              className="object-contain md:w-[200px] md:h-[200px]"
             />
 
-          <CardTitle className="text-4xl font-bold tracking-wider text-foreground">LogiDesk</CardTitle>
-          <p className="text-lg text-primary font-semibold pt-4">Motorista</p>
+          <CardTitle className="text-3xl md:text-4xl font-bold tracking-wider text-foreground">LogiDesk</CardTitle>
+          <p className="text-base md:text-lg text-primary font-semibold pt-4">Motorista</p>
         </CardHeader>
         <CardContent className="grid gap-6 mt-4">
           <div className="grid gap-2 text-left">
