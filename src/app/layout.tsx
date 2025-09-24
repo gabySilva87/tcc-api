@@ -5,6 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 export const metadata: Metadata = {
   title: 'DriverAuthFlow',
   description: 'Driver authentication and route management',
+  manifest: "/manifest.webmanifest",
 };
 
 export default function RootLayout({
