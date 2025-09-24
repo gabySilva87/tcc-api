@@ -34,13 +34,14 @@ export default function DashboardPage() {
                 height={40}
                 className="rounded-full"
               />
-              <h1 className="text-lg sm:text-xl font-bold text-foreground">Driver</h1>
+              <h1 className="text-lg sm:text-xl font-bold text-foreground shrink-0">Driver</h1>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-3">
                <Avatar>
                 <AvatarImage src="https://picsum.photos/seed/driver/100/100" alt="Usuário" data-ai-hint="driver portrait" />
                 <AvatarFallback>{driverName.charAt(0) || 'D'}</AvatarFallback>
               </Avatar>
+              <p className="text-sm font-medium text-foreground hidden sm:block truncate">{driverName}</p>
               <LogoutButton />
             </div>
           </div>
