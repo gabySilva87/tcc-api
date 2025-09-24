@@ -66,27 +66,28 @@ export function LoginForm() {
     <Card className="w-full max-w-sm shadow-none border-none bg-transparent">
       <form action={formAction}>
         <CardHeader className="flex flex-row items-center space-x-4">
-          <Image
+          <div className="w-[60px] h-[60px] md:w-[80px] md:h-[80px] relative">
+            <Image
               src="/logo.png"
               alt="LogiDesk Logo"
-              width={80}
-              height={80}
+              fill
               className="object-contain"
             />
+          </div>
           <div className="flex flex-col">
-            <CardTitle className="text-3xl md:text-4xl font-bold tracking-wider text-foreground">LogiDesk</CardTitle>
-            <p className="text-base md:text-lg text-primary font-semibold">Motorista</p>
+            <CardTitle className="text-2xl md:text-4xl font-bold tracking-wider text-foreground">LogiDesk</CardTitle>
+            <p className="text-sm md:text-lg text-primary font-semibold">Motorista</p>
           </div>
         </CardHeader>
         <CardContent className="grid gap-6 mt-4">
           <div className="grid gap-2">
-            <Input id="usuario" type="text" name="usuario" placeholder="Usuário" required aria-describedby='usuario-error' className="bg-input border-none rounded-full px-5 py-6 text-background" />
+            <Input id="usuario" type="text" name="usuario" placeholder="Usuário" required aria-describedby='usuario-error' className="bg-input border-none rounded-full px-5 py-3 md:py-6" />
             <div id="usuario-error" aria-live="polite" aria-atomic="true">
               {state?.errors?.usuario && <p className="text-sm font-medium text-destructive">{state.errors.usuario[0]}</p>}
             </div>
           </div>
           <div className="grid gap-2">
-            <Input id="senha" type="password" name="senha" placeholder="Senha" required aria-describedby='senha-error' className="bg-input border-none rounded-full px-5 py-6 text-background"/>
+            <Input id="senha" type="password" name="senha" placeholder="Senha" required aria-describedby='senha-error' className="bg-input border-none rounded-full px-5 py-3 md:py-6"/>
             <div id="senha-error" aria-live="polite" aria-atomic="true">
              {state?.errors?.senha && <p className="text-sm font-medium text-destructive">{state.errors.senha[0]}</p>}
             </div>
