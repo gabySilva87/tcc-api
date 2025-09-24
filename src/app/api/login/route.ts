@@ -3,13 +3,13 @@ import mysql from 'mysql2/promise';
 
 // A função POST é acionada quando o formulário de login é enviado.
 export async function POST(request: Request) {
-  // Extrai o usuario e a senha do corpo da requisição.
-  const { usuario, senha } = await request.json();
+  // Extrai o cpf e a senha do corpo da requisição.
+  const { cpf, senha } = await request.json();
 
   // Validação básica para garantir que ambos os campos foram enviados.
-  if (!usuario || !senha) {
+  if (!cpf || !senha) {
     return NextResponse.json(
-      { success: false, message: 'Usuário e senha são obrigatórios.' },
+      { success: false, message: 'CPF e senha são obrigatórios.' },
       { status: 400 }
     );
   }
@@ -32,8 +32,8 @@ export async function POST(request: Request) {
     // PASSO 2: CONSULTA SQL PARA VERIFICAR AS CREDENCIAIS
     // =======================================================================
     const [rows] = await connection.execute(
-      'SELECT nm_motorista FROM tb_motorista WHERE nm_usuario = ? AND nr_senha = ?',
-      [usuario, senha]
+      'SELECT nm_motorista FROM tb_motorista WHERE nr_CPF = ? AND nr_senha = ?',
+      [cpf, senha]
     );
 
     // =======================================================================
@@ -45,7 +45,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ success: true, message: 'Login bem-sucedido!', driverName: driver.nm_motorista });
     } else {
       return NextResponse.json(
-        { success: false, message: 'Credenciais inválidas. Verifique seu usuário e senha.' },
+        { success: false, message: 'Credenciais inválidas. Verifique seu CPF e senha.' },
         { status: 401 }
       );
     }

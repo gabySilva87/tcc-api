@@ -6,7 +6,7 @@ import { revalidatePath } from 'next/cache';
 
 // Define o schema de validação para os dados do formulário de login usando Zod.
 const loginSchema = z.object({
-  usuario: z.string().min(1, { message: 'O campo de usuário é obrigatório.'}),
+  cpf: z.string().min(1, { message: 'O campo de CPF é obrigatório.'}),
   senha: z.string().min(1, { message: 'O campo de senha é obrigatório.' }),
 });
 
@@ -23,7 +23,7 @@ export async function login(prevState: any, formData: FormData) {
     };
   }
 
-  const { usuario, senha } = validatedFields.data;
+  const { cpf, senha } = validatedFields.data;
 
   try {
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:9002';
@@ -32,7 +32,7 @@ export async function login(prevState: any, formData: FormData) {
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ usuario, senha }),
+      body: JSON.stringify({ cpf, senha }),
     });
 
     const responseData = await response.json();
@@ -48,7 +48,7 @@ export async function login(prevState: any, formData: FormData) {
     } else {
       return {
         success: false,
-        message: responseData.message || 'Credenciais inválidas. Verifique seu usuário e senha.',
+        message: responseData.message || 'Credenciais inválidas. Verifique seu CPF e senha.',
         errors: {},
       };
     }
