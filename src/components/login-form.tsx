@@ -1,5 +1,3 @@
-// Define que este é um "Client Component", ou seja, um componente que
-// pode usar estado, efeitos e interatividade no navegador do usuário.
 'use client';
 
 // Importa os hooks do React para gerenciar estado e ciclo de vida.
@@ -89,53 +87,40 @@ export function LoginForm() {
     // O array de dependências garante que este código só execute quando `state`, `router` ou `toast` mudarem.
   }, [state, router, toast]);
 
-  // A estrutura JSX que renderiza o formulário na tela.
   return (
-    // Componente Card usado como contêiner principal do formulário.
     <Card className="w-full max-w-sm shadow-none border-none bg-transparent">
-      {/* O atributo `action` do formulário aponta para a `formAction` que executa a Server Action. */}
       <form action={formAction}>
-        {/* Cabeçalho do Card, contendo a logo e os títulos. */}
         <CardHeader className="flex flex-col items-center text-center space-y-4">
-          {/* Contêiner `div` para controlar o tamanho da imagem de forma responsiva. */}
           <div className="w-[150px] h-[150px] md:w-[180px] md:h-[180px] relative">
-            {/* Componente de imagem otimizada do Next.js. */}
             <Image
               src="/LogiDesk.Logo.png"
               alt="LogiDesk Logo"
-              fill // Faz a imagem preencher o contêiner `div` pai.
-              className="object-contain" // Garante que a imagem não seja distorcida.
-              priority // Prioriza o carregamento desta imagem, pois é um conteúdo principal.
+              fill
+              className="object-contain"
+              priority
             />
           </div>
-          {/* Contêiner para os textos de título. */}
           <div className="flex flex-col">
             <CardTitle className="text-2xl md:text-4xl font-bold tracking-wider text-foreground">LogiDesk</CardTitle>
             <p className="text-base md:text-lg text-primary font-semibold">Motorista</p>
           </div>
         </CardHeader>
 
-        {/* Conteúdo principal do Card, onde ficam os campos de entrada. */}
         <CardContent className="grid gap-6 mt-4">
-          {/* Campo de entrada para o usuário. */}
           <div className="grid gap-2">
-            <Input id="usuario" type="text" name="usuario" placeholder="Usuário" required aria-describedby='usuario-error' className="bg-input border-none rounded-full px-5 py-3 md:py-6" />
-            {/* Área para exibir mensagens de erro de validação para o campo "usuário". */}
+            <Input id="usuario" type="text" name="usuario" placeholder="Usuário" required aria-describedby='usuario-error' className="bg-input border-none rounded-full px-5 py-3" />
             <div id="usuario-error" aria-live="polite" aria-atomic="true">
               {state?.errors?.usuario && <p className="text-sm font-medium text-destructive">{state.errors.usuario[0]}</p>}
             </div>
           </div>
-          {/* Campo de entrada para a senha. */}
           <div className="grid gap-2">
-            <Input id="senha" type="password" name="senha" placeholder="Senha" required aria-describedby='senha-error' className="bg-input border-none rounded-full px-5 py-3 md:py-6"/>
-            {/* Área para exibir mensagens de erro de validação para o campo "senha". */}
+            <Input id="senha" type="password" name="senha" placeholder="Senha" required aria-describedby='senha-error' className="bg-input border-none rounded-full px-5 py-3"/>
             <div id="senha-error" aria-live="polite" aria-atomic="true">
              {state?.errors?.senha && <p className="text-sm font-medium text-destructive">{state.errors.senha[0]}</p>}
             </div>
           </div>
         </CardContent>
 
-        {/* Rodapé do Card, onde fica o botão de submit. */}
         <CardFooter className="mt-4">
           <SubmitButton />
         </CardFooter>
