@@ -141,7 +141,7 @@ export function LoginForm() {
                 `placeholder` fornece uma dica visual.
                 `required` torna o campo obrigatório.
                 `aria-describedby` conecta o input à sua mensagem de erro para acessibilidade. */}
-            <Input id="usuario" type="text" name="usuario" placeholder="Digite seu usuário" required aria-describedby='usuario-error' className="bg-input border-none rounded-full px-5 py-3" />
+            <Input id="usuario" type="text" name="usuario" placeholder="Digite seu usuário" required aria-describedby='usuario-error' className="rounded-full px-5 py-3" />
             {/* Contêiner para a mensagem de erro de validação do campo "usuário".
                 `aria-live="polite"` informa aos leitores de tela para anunciar a mensagem de erro quando ela aparecer. */}
             <div id="usuario-error" aria-live="polite" aria-atomic="true">
@@ -153,7 +153,7 @@ export function LoginForm() {
             {/* Label para o campo de senha. */}
             <Label htmlFor="senha">Senha</Label>
             {/* Campo de entrada de senha. `type="password"` mascara o texto digitado. */}
-            <Input id="senha" type="password" name="senha" placeholder="Digite sua senha" required aria-describedby='senha-error' className="bg-input border-none rounded-full px-5 py-3"/>
+            <Input id="senha" type="password" name="senha" placeholder="Digite sua senha" required aria-describedby='senha-error' className="rounded-full px-5 py-3"/>
             {/* Contêiner para a mensagem de erro de validação do campo "senha". */}
             <div id="senha-error" aria-live="polite" aria-atomic="true">
              {state?.errors?.senha && <p className="text-sm font-medium text-destructive">{state.errors.senha[0]}</p>}
