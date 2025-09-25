@@ -134,14 +134,16 @@ export function LoginForm() {
         <CardContent className="grid gap-4 mt-2">
           {/* Seção para o campo de usuário. */}
           <div className="grid gap-2">
-            {/* O `<Label>` melhora a acessibilidade e a usabilidade, mostrando o que o campo representa. */}
-            <Label htmlFor="usuario">Usuário</Label>
+            {/* O `<Label>` melhora a acessibilidade e a usabilidade, mostrando o que o campo representa.
+                A classe `text-foreground` garante que o texto do label seja visível no tema escuro. */}
+            <Label htmlFor="usuario" className="text-foreground">Usuário</Label>
             {/* O campo de entrada de texto para o nome de usuário.
                 `id` e `name` são importantes para o formulário.
                 `placeholder` fornece uma dica visual.
                 `required` torna o campo obrigatório.
-                `aria-describedby` conecta o input à sua mensagem de erro para acessibilidade. */}
-            <Input id="usuario" type="text" name="usuario" placeholder="Digite seu usuário" required aria-describedby='usuario-error' className="rounded-full px-5 py-3" />
+                `aria-describedby` conecta o input à sua mensagem de erro para acessibilidade.
+                As classes de estilo garantem o fundo branco, texto preto e bordas arredondadas. */}
+            <Input id="usuario" type="text" name="usuario" placeholder="Digite seu usuário" required aria-describedby='usuario-error' className="bg-white text-black placeholder:text-gray-500 rounded-full px-5 py-3" />
             {/* Contêiner para a mensagem de erro de validação do campo "usuário".
                 `aria-live="polite"` informa aos leitores de tela para anunciar a mensagem de erro quando ela aparecer. */}
             <div id="usuario-error" aria-live="polite" aria-atomic="true">
@@ -150,10 +152,10 @@ export function LoginForm() {
           </div>
           {/* Seção para o campo de senha. */}
           <div className="grid gap-2">
-            {/* Label para o campo de senha. */}
-            <Label htmlFor="senha">Senha</Label>
+            {/* Label para o campo de senha, com cor de texto ajustada para visibilidade. */}
+            <Label htmlFor="senha" className="text-foreground">Senha</Label>
             {/* Campo de entrada de senha. `type="password"` mascara o texto digitado. */}
-            <Input id="senha" type="password" name="senha" placeholder="Digite sua senha" required aria-describedby='senha-error' className="rounded-full px-5 py-3"/>
+            <Input id="senha" type="password" name="senha" placeholder="Digite sua senha" required aria-describedby='senha-error' className="bg-white text-black placeholder:text-gray-500 rounded-full px-5 py-3"/>
             {/* Contêiner para a mensagem de erro de validação do campo "senha". */}
             <div id="senha-error" aria-live="polite" aria-atomic="true">
              {state?.errors?.senha && <p className="text-sm font-medium text-destructive">{state.errors.senha[0]}</p>}
