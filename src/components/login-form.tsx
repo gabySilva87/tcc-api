@@ -66,7 +66,7 @@ export function LoginForm() {
     <Card className="w-full max-w-sm shadow-none border-none bg-transparent">
       <form action={formAction}>
         <CardHeader className="flex flex-col items-center text-center space-y-4">
-          <div className="w-[150px] h-[150px] md:w-[200px] md:h-[200px] relative">
+          <div className="w-[120px] h-[120px] md:w-[150px] md:h-[150px] relative">
             <Image
               src="/LogiDesk.Logo.png"
               alt="LogiDesk Logo"
