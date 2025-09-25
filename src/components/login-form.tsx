@@ -135,7 +135,7 @@ export function LoginForm() {
           {/* Seção para o campo de usuário. */}
           <div className="grid gap-2">
             {/* O `<Label>` melhora a acessibilidade e a usabilidade, mostrando o que o campo representa. */}
-            <Label htmlFor="usuario" className="text-foreground/80">Usuário</Label>
+            <Label htmlFor="usuario">Usuário</Label>
             {/* O campo de entrada de texto para o nome de usuário.
                 `id` e `name` são importantes para o formulário.
                 `placeholder` fornece uma dica visual.
