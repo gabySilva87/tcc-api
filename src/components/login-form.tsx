@@ -85,7 +85,7 @@ export function LoginForm() {
           {/* Este container agrupa os títulos "LogiDesk" e "Motorista". */}
           <div className="flex flex-col">
             {/* CardTitle exibe o nome principal do aplicativo com estilos de título. */}
-            <CardTitle className="text-3xl md:text-4xl font-bold tracking-wider text-foreground">LogiDesk</CardTitle>
+            <CardTitle className="text-2xl md:text-4xl font-bold tracking-wider text-foreground">LogiDesk</CardTitle>
             {/* Parágrafo para o subtítulo "Motorista", com cor primária para destaque. */}
             <p className="text-base md:text-lg text-primary font-semibold">Motorista</p>
           </div>
@@ -98,7 +98,7 @@ export function LoginForm() {
             {/* Componente Input para o campo "Usuário", com placeholder e validação de `required`. */}
             {/* `aria-describedby` conecta o input à sua mensagem de erro para acessibilidade. */}
             <Input id="usuario" type="text" name="usuario" placeholder="Usuário" required aria-describedby='usuario-error' className="bg-input border-none rounded-full px-5 py-3 md:py-6" />
-            {/* Esta div exibe a mensagem de erro para o campo "usuario" se ela existir no estado retornado pela action. */}
+            {/* Esta div exibe la mensagem de erro para o campo "usuario" se ela existir no estado retornado pela action. */}
             {/* `aria-live="polite"` informa leitores de tela sobre a mudança de forma não-intrusiva. */}
             <div id="usuario-error" aria-live="polite" aria-atomic="true">
               {state?.errors?.usuario && <p className="text-sm font-medium text-destructive">{state.errors.usuario[0]}</p>}
