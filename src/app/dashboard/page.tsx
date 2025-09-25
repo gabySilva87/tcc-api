@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect } from "react";
@@ -27,14 +28,13 @@ export default function DashboardPage() {
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center gap-4">
               <Image
-                src="https://picsum.photos/seed/logo/40/40"
+                src="/LogiDesk.Logo.png"
                 alt="LogiDesk Logo"
                 width={40}
                 height={40}
                 className="rounded-full"
-                data-ai-hint="logo logistics"
               />
-              <h1 className="text-xl font-bold text-foreground">Driver</h1>
+              <h1 className="text-lg sm:text-xl font-bold text-foreground">Motorista</h1>
             </div>
             <div className="flex items-center gap-2">
                <Avatar>

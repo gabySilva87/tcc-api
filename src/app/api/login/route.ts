@@ -3,13 +3,13 @@ import mysql from 'mysql2/promise';
 
 // A função POST é acionada quando o formulário de login é enviado.
 export async function POST(request: Request) {
-  // Extrai o email e a senha do corpo da requisição.
-  const { email, senha } = await request.json();
+  // Extrai o usuario e a senha do corpo da requisição.
+  const { usuario, senha } = await request.json();
 
   // Validação básica para garantir que ambos os campos foram enviados.
-  if (!email || !senha) {
+  if (!usuario || !senha) {
     return NextResponse.json(
-      { success: false, message: 'Email e senha são obrigatórios.' },
+      { success: false, message: 'Usuário e senha são obrigatórios.' },
       { status: 400 }
     );
   }
@@ -32,8 +32,8 @@ export async function POST(request: Request) {
     // PASSO 2: CONSULTA SQL PARA VERIFICAR AS CREDENCIAIS
     // =======================================================================
     const [rows] = await connection.execute(
-      'SELECT nm_motorista FROM tb_motorista WHERE nm_email = ? AND nm_senha = ?',
-      [email, senha]
+      'SELECT nm_motorista FROM tb_motorista WHERE nm_usuario = ? AND nr_senha = ?',
+      [usuario, senha]
     );
 
     // =======================================================================
@@ -45,7 +45,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ success: true, message: 'Login bem-sucedido!', driverName: driver.nm_motorista });
     } else {
       return NextResponse.json(
-        { success: false, message: 'Credenciais inválidas. Verifique seu email e senha.' },
+        { success: false, message: 'Credenciais inválidas. Verifique seu usuário e senha.' },
         { status: 401 }
       );
     }
