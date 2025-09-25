@@ -72,21 +72,23 @@ export function LoginForm() {
         {/* As classes `flex-col`, `items-center` e `text-center` alinham tudo verticalmente e ao centro. */}
         <CardHeader className="flex flex-col items-center text-center space-y-4">
           {/* Este container define as dimensões responsivas para a logo. */}
-          <div className="w-[80px] h-[80px] md:w-[100px] md:h-[100px] relative">
+          {/* A classe `relative` é necessária para que a imagem com `fill` funcione corretamente. */}
+          <div className="w-[150px] h-[150px] md:w-[200px] md:h-[200px] relative">
             {/* O componente Image do Next.js otimiza o carregamento da logo. */}
             {/* `fill` e `object-contain` garantem que a imagem preencha o container sem se distorcer. */}
             <Image
-              src="/logo.png"
+              src="/LogiDesk.Logo.png"
               alt="LogiDesk Logo"
               fill
               className="object-contain"
+              priority
             />
           </div>
           {/* Este container agrupa os títulos "LogiDesk" e "Motorista". */}
           <div className="flex flex-col">
-            {/* CardTitle exibe o nome principal do aplicativo com estilos de título. */}
+            {/* CardTitle exibe o nome principal do aplicativo com estilos de título responsivos. */}
             <CardTitle className="text-2xl md:text-4xl font-bold tracking-wider text-foreground">LogiDesk</CardTitle>
-            {/* Parágrafo para o subtítulo "Motorista", com cor primária para destaque. */}
+            {/* Parágrafo para o subtítulo "Motorista", com cor primária e tamanho de fonte responsivo. */}
             <p className="text-base md:text-lg text-primary font-semibold">Motorista</p>
           </div>
         </CardHeader>
@@ -97,6 +99,7 @@ export function LoginForm() {
           <div className="grid gap-2">
             {/* Componente Input para o campo "Usuário", com placeholder e validação de `required`. */}
             {/* `aria-describedby` conecta o input à sua mensagem de erro para acessibilidade. */}
+            {/* As classes definem o estilo do input, incluindo fundo, borda e cantos arredondados. */}
             <Input id="usuario" type="text" name="usuario" placeholder="Usuário" required aria-describedby='usuario-error' className="bg-input border-none rounded-full px-5 py-3 md:py-6" />
             {/* Esta div exibe la mensagem de erro para o campo "usuario" se ela existir no estado retornado pela action. */}
             {/* `aria-live="polite"` informa leitores de tela sobre a mudança de forma não-intrusiva. */}
