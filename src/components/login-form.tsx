@@ -131,7 +131,7 @@ export function LoginForm() {
         </CardHeader>
 
         {/* Conteúdo principal do cartão, onde os campos de entrada do formulário são colocados. */}
-        <CardContent className="grid gap-4 mt-4">
+        <CardContent className="grid gap-4 mt-2">
           {/* Seção para o campo de usuário. */}
           <div className="grid gap-2">
             {/* O `<Label>` melhora a acessibilidade e a usabilidade, mostrando o que o campo representa. */}
@@ -162,7 +162,7 @@ export function LoginForm() {
         </CardContent>
 
         {/* Rodapé do cartão, onde o botão de envio é colocado. */}
-        <CardFooter className="mt-4">
+        <CardFooter className="mt-2">
           {/* O componente `SubmitButton` é usado aqui. Ele contém a lógica para exibir o estado de carregamento. */}
           <SubmitButton />
         </CardFooter>
