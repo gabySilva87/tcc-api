@@ -15,6 +15,7 @@ import { login } from '@/app/actions';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { Loader2 } from 'lucide-react'; // Ícone de carregamento.
 import Image from 'next/image'; // Componente de imagem otimizada do Next.js.
 
@@ -87,40 +88,60 @@ export function LoginForm() {
     // O array de dependências garante que este código só execute quando `state`, `router` ou `toast` mudarem.
   }, [state, router, toast]);
 
+  // Retorna a estrutura JSX do componente do formulário de login.
   return (
+    // O componente `Card` serve como um contêiner principal para o formulário.
+    // As classes definem a largura, removem sombra, borda e fundo para um visual limpo.
     <Card className="w-full max-w-sm shadow-none border-none bg-transparent">
+      {/* O elemento `form` usa a Server Action `formAction` para lidar com o envio. */}
       <form action={formAction}>
-        <CardHeader className="flex flex-col items-center text-center space-y-4">
-          <div className="w-[150px] h-[150px] md:w-[180px] md:h-[180px] relative">
+        {/* `CardHeader` contém a logo e os títulos, centralizados com flexbox. */}
+        <CardHeader className="flex flex-col items-center text-center space-y-2">
+          {/* Contêiner da imagem da logo com tamanho responsivo. `relative` é necessário para `fill` funcionar. */}
+          <div className="w-[120px] h-[120px] md:w-[150px] md:h-[150px] relative">
+            {/* Componente `Image` do Next.js para otimização. */}
             <Image
-              src="/LogiDesk.Logo.png"
-              alt="LogiDesk Logo"
-              fill
-              className="object-contain"
-              priority
+              src="/LogiDesk.Logo.png"    // Caminho da imagem na pasta `public`.
+              alt="LogiDesk Logo"         // Texto alternativo para acessibilidade.
+              fill                        // Faz a imagem preencher o contêiner pai.
+              className="object-contain"  // Garante que a imagem não seja distorcida.
+              priority                    // Prioriza o carregamento desta imagem.
             />
           </div>
-          <div className="flex flex-col">
+          {/* Contêiner para o título e subtítulo. */}
+          <div className="flex flex-col pt-2">
+            {/* Título principal da aplicação com tamanho responsivo. */}
             <CardTitle className="text-2xl md:text-4xl font-bold tracking-wider text-foreground">LogiDesk</CardTitle>
+            {/* Subtítulo que identifica o tipo de usuário. */}
             <p className="text-base md:text-lg text-primary font-semibold">Motorista</p>
           </div>
         </CardHeader>
 
-        <CardContent className="grid gap-6 mt-4">
+        {/* `CardContent` agrupa os campos de entrada do formulário. */}
+        <CardContent className="grid gap-4 mt-4">
+          {/* Campo de entrada para o nome de usuário. */}
           <div className="grid gap-2">
-            <Input id="usuario" type="text" name="usuario" placeholder="Usuário" required aria-describedby='usuario-error' className="bg-input border-none rounded-full px-5 py-3" />
+            <Label htmlFor="usuario" className="text-foreground/80">Usuário</Label>
+            {/* Componente `Input` customizado com estilos para o fundo, borda e preenchimento. */}
+            <Input id="usuario" type="text" name="usuario" placeholder="Digite seu usuário" required aria-describedby='usuario-error' className="bg-input border-none rounded-full px-5 py-3" />
+            {/* Contêiner para exibir mensagens de erro de validação para o campo 'usuario'. */}
             <div id="usuario-error" aria-live="polite" aria-atomic="true">
               {state?.errors?.usuario && <p className="text-sm font-medium text-destructive">{state.errors.usuario[0]}</p>}
             </div>
           </div>
+          {/* Campo de entrada para a senha. */}
           <div className="grid gap-2">
-            <Input id="senha" type="password" name="senha" placeholder="Senha" required aria-describedby='senha-error' className="bg-input border-none rounded-full px-5 py-3"/>
+            <Label htmlFor="senha">Senha</Label>
+             {/* Componente `Input` para a senha. */}
+            <Input id="senha" type="password" name="senha" placeholder="Digite sua senha" required aria-describedby='senha-error' className="bg-input border-none rounded-full px-5 py-3"/>
+            {/* Contêiner para exibir mensagens de erro de validação para o campo 'senha'. */}
             <div id="senha-error" aria-live="polite" aria-atomic="true">
              {state?.errors?.senha && <p className="text-sm font-medium text-destructive">{state.errors.senha[0]}</p>}
             </div>
           </div>
         </CardContent>
 
+        {/* `CardFooter` contém o botão de envio do formulário. */}
         <CardFooter className="mt-4">
           <SubmitButton />
         </CardFooter>
