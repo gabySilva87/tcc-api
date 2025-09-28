@@ -26,7 +26,7 @@ export async function POST(request: Request) {
     connection = await mysql.createConnection({
       host: process.env.DB_HOST,
       port: Number(process.env.DB_PORT),
-      user: process.env.DB_USER, // Usa a variável de ambiente correta.
+      user: process.env.DB_USER,
       password: process.env.DB_PASSWORD,
       database: process.env.DB_DATABASE,
       ssl: process.env.DB_SSL === 'true' ? { rejectUnauthorized: true } : undefined,
