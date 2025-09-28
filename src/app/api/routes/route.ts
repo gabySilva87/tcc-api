@@ -1,6 +1,7 @@
 
 import { NextResponse } from 'next/server';
 import mysql from 'mysql2/promise';
+import { decrypt } from '@/lib/crypto';
 
 // A função GET é uma API Route que é acionada quando o frontend faz uma requisição
 // do tipo GET para `/api/routes`.
@@ -23,34 +24,67 @@ export async function GET(request: Request) {
     // =======================================================================
     // PASSO 2: CONSULTA SQL PARA BUSCAR DADOS
     // =======================================================================
-    // A consulta foi simplificada para buscar apenas da tb_encomenda
-    // e filtrar pelo status 'pendente'.
+    // A consulta junta tb_encomenda com tb_endereco para obter os detalhes do endereço.
+    // Filtra pelo status 'pendente'.
     const [rows] = await connection.execute(
       `SELECT 
-        id_encomenda, 
-        nr_encomenda, 
-        nm_cliente, 
-        nm_status_encomenda, 
-        created_at 
-       FROM tb_encomenda
-       WHERE nm_status_encomenda = 'pendente'`
+        e.id_encomenda, 
+        e.nr_encomenda, 
+        e.nm_cliente, 
+        e.nm_status_encomenda, 
+        e.created_at,
+        end.nr_cep,
+        end.nr_casa,
+        end.ds_complemento,
+        end.nm_bairro,
+        end.nm_cidade,
+        end.nm_estado
+       FROM tb_encomenda as e
+       LEFT JOIN tb_endereco as end ON e.cd_endereco = end.cd_endereco
+       WHERE e.nm_status_encomenda = 'pendente'`
     );
 
     // =======================================================================
-    // PASSO 3: MAPEAMENTO E FORMATAÇÃO DOS DADOS
+    // PASSO 3: MAPEAMENTO E DESCRIPTOGRAFIA DOS DADOS
     // =======================================================================
-    // Mapeia os resultados da consulta SQL para um formato de objeto que o frontend espera.
-    // Isso desacopla a estrutura do banco de dados da estrutura da UI.
-    const routes = (rows as any[]).map(row => ({
-      id: row.id_encomenda,
-      title: `Encomenda #${row.nr_encomenda}`, // Usa o número da encomenda como título.
-      description: `Cliente: ${row.nm_cliente}`, // Usa o nome do cliente na descrição.
-      address: 'Endereço não disponível', // Placeholder, já que não temos a tabela de endereço.
-      status: row.nm_status_encomenda,
-      // Formata a data de criação para exibir apenas a hora e o minuto no formato brasileiro.
-      time: new Date(row.created_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
-      read: false // Propriedade adicional que o frontend pode usar, não vem do banco.
-    }));
+    // Mapeia os resultados da consulta SQL para um formato que o frontend espera.
+    // Descriptografa os campos de endereço antes de enviá-los.
+    const routes = (rows as any[]).map(row => {
+      // Tenta descriptografar cada parte do endereço. Se falhar, usa um valor padrão.
+      try {
+        const cep = row.nr_cep ? decrypt(row.nr_cep) : '';
+        const numero = row.nr_casa ? decrypt(row.nr_casa) : '';
+        const complemento = row.ds_complemento ? decrypt(row.ds_complemento) : '';
+        const bairro = row.nm_bairro ? decrypt(row.nm_bairro) : '';
+        const cidade = row.nm_cidade ? decrypt(row.nm_cidade) : '';
+        const estado = row.nm_estado ? decrypt(row.nm_estado) : '';
+
+        // Formata o endereço completo.
+        const fullAddress = [cep, bairro, cidade, estado, numero, complemento].filter(Boolean).join(', ');
+
+        return {
+          id: row.id_encomenda,
+          title: `Encomenda #${row.nr_encomenda}`,
+          description: `Cliente: ${row.nm_cliente}`,
+          address: fullAddress || 'Endereço indisponível',
+          status: row.nm_status_encomenda,
+          time: new Date(row.created_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
+          read: false
+        };
+      } catch (e) {
+        console.error(`Falha ao descriptografar dados para a encomenda ID ${row.id_encomenda}:`, e);
+        // Retorna um objeto de rota com endereço de fallback em caso de erro.
+        return {
+          id: row.id_encomenda,
+          title: `Encomenda #${row.nr_encomenda}`,
+          description: `Cliente: ${row.nm_cliente}`,
+          address: 'Erro ao processar endereço',
+          status: row.nm_status_encomenda,
+          time: new Date(row.created_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
+          read: false
+        };
+      }
+    });
     
     // =======================================================================
     // PASSO 4: RETORNAR OS DADOS FORMATADOS
