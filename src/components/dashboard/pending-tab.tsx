@@ -2,13 +2,13 @@
 'use client';
 
 // Importa os hooks do React para gerenciar estado e ciclo de vida.
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 // Importa componentes de UI da biblioteca ShadCN.
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { Button } from '@/components/ui/button';
-import { AlertTriangle, MapPin, Truck } from "lucide-react";
+import { AlertTriangle, MapPin, Truck, RefreshCw } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton"; // Componente para mostrar um placeholder de carregamento.
 import { ScrollArea } from "@/components/ui/scroll-area"; // Componente para adicionar uma barra de rolagem.
 import Image from 'next/image';
@@ -32,35 +32,40 @@ export default function PendingTab() {
   // Estado para armazenar a rota que está selecionada na lista.
   const [selectedRoute, setSelectedRoute] = useState<Route | null>(null);
 
+  // `useCallback` para memorizar a função de busca e evitar recriações desnecessárias.
+  const fetchRoutes = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      // Faz a chamada `fetch` para a nossa API interna de rotas.
+      const response = await fetch('/api/routes');
+      const data = await response.json();
+      
+      // Se a resposta da API não foi bem-sucedida (ex: erro no servidor)...
+      if (!response.ok) {
+        // Lança um erro com a mensagem retornada pela API.
+        throw new Error(data.message || 'Falha ao buscar os dados das rotas.');
+      }
+      setRoutes(data); // Atualiza o estado com as rotas recebidas.
+      if (data.length > 0) {
+          // Seleciona a primeira rota da lista por padrão para exibir os detalhes.
+          setSelectedRoute(data[0]); 
+      } else {
+        setSelectedRoute(null);
+      }
+    } catch (err: any) {
+      // Se ocorrer um erro durante o `fetch` ou na API, atualiza o estado de erro.
+      setError(err.message);
+    } finally {
+      // Independentemente do resultado, define o carregamento como `false`.
+      setLoading(false);
+    }
+  }, []);
+
   // `useEffect` para buscar os dados das rotas da API quando o componente é montado.
   useEffect(() => {
-    async function fetchRoutes() {
-      try {
-        // Faz a chamada `fetch` para a nossa API interna de rotas.
-        const response = await fetch('/api/routes');
-        const data = await response.json();
-        
-        // Se a resposta da API não foi bem-sucedida (ex: erro no servidor)...
-        if (!response.ok) {
-          // Lança um erro com a mensagem retornada pela API.
-          throw new Error(data.message || 'Falha ao buscar os dados das rotas.');
-        }
-        setRoutes(data); // Atualiza o estado com as rotas recebidas.
-        if (data.length > 0) {
-            // Seleciona a primeira rota da lista por padrão para exibir os detalhes.
-            setSelectedRoute(data[0]); 
-        }
-      } catch (err: any) {
-        // Se ocorrer um erro durante o `fetch` ou na API, atualiza o estado de erro.
-        setError(err.message);
-      } finally {
-        // Independentemente do resultado, define o carregamento como `false`.
-        setLoading(false);
-      }
-    }
-
     fetchRoutes();
-  }, []); // O array de dependências vazio `[]` garante que o efeito rode apenas uma vez.
+  }, [fetchRoutes]); // O array de dependências com `fetchRoutes` garante que o efeito rode quando a função for definida.
 
   // Se os dados ainda estão sendo carregados, exibe um esqueleto de UI.
   if (loading) {
@@ -87,8 +92,12 @@ export default function PendingTab() {
             <CardContent>
                 <p className="text-destructive">{error}</p>
                 <p className="text-muted-foreground text-sm mt-2">
-                    Por favor, verifique se as credenciais no seu arquivo `.env.local` estão corretas e se o servidor de banco de dados está acessível.
+                    Não foi possível carregar os dados das entregas. Verifique a API ou tente novamente.
                 </p>
+                <Button variant="destructive" className="mt-4" onClick={fetchRoutes}>
+                    <RefreshCw className="w-4 h-4 mr-2"/>
+                    Tentar Novamente
+                </Button>
             </CardContent>
         </Card>
     );
@@ -129,9 +138,14 @@ export default function PendingTab() {
                     </ul>
                 </ScrollArea>
                 ) : (
-                // Se não houver rotas, exibe uma mensagem.
-                <div className="p-4 text-center text-muted-foreground h-[400px] flex items-center justify-center">
-                    <p>Nenhuma entrega pendente no momento.</p>
+                // Se não houver rotas, exibe uma mensagem amigável.
+                <div className="p-4 text-center text-muted-foreground h-[400px] flex flex-col items-center justify-center gap-4">
+                    <p className="font-medium">Nenhuma entrega pendente no momento!</p>
+                    <p className="text-sm">Você está em dia. Bom trabalho!</p>
+                    <Button variant="outline" onClick={fetchRoutes}>
+                        <RefreshCw className="w-4 h-4 mr-2" />
+                        Verificar novamente
+                    </Button>
                 </div>
                 )}
             </CardContent>
@@ -140,7 +154,7 @@ export default function PendingTab() {
       
       {/* Coluna da direita: detalhes da rota selecionada. */}
       <div className="md:col-span-2">
-        {selectedRoute && (
+        {selectedRoute ? (
             // Se uma rota estiver selecionada, exibe seus detalhes.
             <Card>
                 <CardHeader>
@@ -163,7 +177,7 @@ export default function PendingTab() {
                 <Button className="w-full mt-6 bg-primary hover:bg-primary/90 text-primary-foreground">Iniciar Rota</Button>
                 </CardContent>
             </Card>
-        )}
+        ): null}
       </div>
     </div>
   );
