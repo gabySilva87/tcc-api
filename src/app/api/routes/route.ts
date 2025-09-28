@@ -59,7 +59,9 @@ export async function GET(request: Request) {
         const estado = row.nm_estado ? decrypt(row.nm_estado) : '';
 
         // Formata o endereço completo.
-        const fullAddress = [cep, bairro, cidade, estado, numero, complemento].filter(Boolean).join(', ');
+        const addressParts = [cep, bairro, cidade, estado].filter(Boolean);
+        const streetAddress = addressParts.join(', ');
+        const fullAddress = [streetAddress, numero, complemento].filter(Boolean).join(', ');
 
         return {
           id: row.id_encomenda,
