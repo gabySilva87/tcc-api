@@ -25,7 +25,7 @@ export async function GET(request: Request) {
     // PASSO 2: CONSULTA SQL PARA BUSCAR DADOS
     // =======================================================================
     // A consulta junta tb_encomenda com tb_endereco para obter os detalhes do endereço.
-    // Filtra pelo status 'pendente'.
+    // O filtro de status foi removido pois a coluna não existe.
     const [rows] = await connection.execute(
       `SELECT 
         e.id_encomenda, 
@@ -39,8 +39,7 @@ export async function GET(request: Request) {
         end.nm_cidade,
         end.nm_estado
        FROM tb_encomenda as e
-       LEFT JOIN tb_endereco as end ON e.cd_endereco = end.cd_endereco
-       WHERE e.ds_status = 'pendente'`
+       LEFT JOIN tb_endereco as end ON e.cd_endereco = end.cd_endereco`
     );
 
     // =======================================================================
@@ -66,7 +65,7 @@ export async function GET(request: Request) {
           title: `Encomenda #${row.nr_encomenda}`,
           description: `Cliente: ${row.nm_cliente}`,
           address: fullAddress || 'Endereço indisponível',
-          status: 'pendente', // Como a query filtra por 'pendente', podemos definir estaticamente.
+          status: 'pendente', // Definido estaticamente pois não há coluna de status na consulta.
           time: new Date(row.created_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
           read: false
         };
