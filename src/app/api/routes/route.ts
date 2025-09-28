@@ -1,15 +1,17 @@
+
 import { NextResponse } from 'next/server';
 import mysql from 'mysql2/promise';
+import { decrypt } from '@/lib/crypto';
 
-// A função GET é acionada quando o frontend faz uma requisição para /api/routes.
+// A função GET é uma API Route que é acionada quando o frontend faz uma requisição
+// do tipo GET para `/api/routes`.
 export async function GET(request: Request) {
   let connection;
   try {
     // =======================================================================
     // PASSO 1: CONEXÃO COM O BANCO DE DADOS MYSQL
     // =======================================================================
-    // As credenciais são lidas de forma segura a partir de variáveis de ambiente
-    // do seu arquivo .env.local. A opção SSL é adicionada para compatibilidade.
+    // Estabelece a conexão com o banco de dados usando as variáveis de ambiente.
     connection = await mysql.createConnection({
       host: process.env.DB_HOST,
       port: Number(process.env.DB_PORT),
@@ -22,43 +24,72 @@ export async function GET(request: Request) {
     // =======================================================================
     // PASSO 2: CONSULTA SQL PARA BUSCAR DADOS
     // =======================================================================
-    // Executa a consulta para buscar as encomendas com status "pendente".
-    // Esta consulta foi atualizada para corresponder ao seu esquema de banco de dados.
+    // A consulta junta tb_encomenda com tb_endereco para obter os detalhes completos.
     const [rows] = await connection.execute(
-      'SELECT id_encomenda, nm_encomenda, ds_encomenda, created_at FROM tb_encomenda WHERE nm_status_encomenda = "pendente"'
+      `SELECT 
+        e.id_encomenda,
+        e.nr_encomenda, 
+        e.nm_cliente, 
+        e.created_at,
+        end.nr_cep,
+        end.nr_casa,
+        end.ds_complemento
+       FROM tb_encomenda as e
+       LEFT JOIN tb_endereco as end ON e.cd_endereco = end.id_endereco`
     );
 
     // =======================================================================
-    // PASSO 3: MAPEAMENTO E FORMATAÇÃO DOS DADOS
+    // PASSO 3: MAPEAMENTO E DESCRIPTOGRAFIA DOS DADOS
     // =======================================================================
-    // O componente do frontend espera campos como 'id', 'title', 'description' e 'time'.
-    // Mapeamos os resultados da sua tabela para o formato que o frontend espera.
-    const routes = (rows as any[]).map(row => ({
-      id: row.id_encomenda,
-      title: row.nm_encomenda,
-      description: row.ds_encomenda,
-      time: new Date(row.created_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
-      read: false // Assumimos que notificações de novas encomendas ainda não foram lidas.
-    }));
+    const routes = (rows as any[]).map(row => {
+      try {
+        const cep = row.nr_cep ? `CEP: ${decrypt(row.nr_cep)}` : '';
+        const numero = row.nr_casa ? `Nº ${decrypt(row.nr_casa)}` : '';
+        const complemento = row.ds_complemento ? decrypt(row.ds_complemento) : '';
+
+        // Formata o endereço completo de forma mais legível com as colunas existentes.
+        const fullAddress = [cep, numero, complemento].filter(Boolean).join(', ');
+
+        return {
+          id: row.id_encomenda,
+          title: `Encomenda #${row.nr_encomenda}`,
+          description: `Cliente: ${row.nm_cliente}`,
+          address: fullAddress || 'Endereço indisponível',
+          status: 'pendente', // Status definido estaticamente para manter a UI.
+          time: new Date(row.created_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
+          read: false
+        };
+      } catch (e) {
+        console.error(`Falha ao descriptografar dados para a encomenda #${row.nr_encomenda}:`, e);
+        return {
+          id: row.id_encomenda,
+          title: `Encomenda #${row.nr_encomenda}`,
+          description: `Cliente: ${row.nm_cliente}`,
+          address: 'Erro ao processar endereço',
+          status: 'pendente',
+          time: 'N/A',
+          read: false
+        };
+      }
+    });
     
     // =======================================================================
     // PASSO 4: RETORNAR OS DADOS FORMATADOS
     // =======================================================================
-    // Retorna os dados mapeados em formato JSON.
     return NextResponse.json(routes);
 
   } catch (error: any) {
-    // Em caso de erro (ex: falha na conexão), loga o erro no console.
-    console.error('[ERRO NA API DE ROTAS]:', error); // Log detalhado do erro no terminal
+    console.error('[ERRO NA API DE ROTAS]:', error);
 
-    // Devolve uma mensagem de erro mais específica para o frontend.
     let errorMessage = 'Ocorreu um erro ao buscar os dados das rotas.';
     if (error.code === 'ECONNREFUSED' || error.code === 'ENOTFOUND') {
-      errorMessage = `Não foi possível conectar ao banco de dados em '${process.env.DB_HOST}'. Verifique o host e a porta.`;
+      errorMessage = `Não foi possível conectar ao banco de dados em '${process.env.DB_HOST}'.`;
     } else if (error.code === 'ER_ACCESS_DENIED_ERROR') {
-      errorMessage = `Acesso negado para o usuário '${process.env.DB_USER}'. Verifique as credenciais do banco de dados.`;
+      errorMessage = `Acesso negado para o usuário '${process.env.DB_USER}'.`;
     } else if (error.code === 'ER_BAD_DB_ERROR') {
       errorMessage = `Banco de dados '${process.env.DB_DATABASE}' não encontrado.`;
+    } else if (error.code === 'ER_BAD_FIELD_ERROR') {
+      errorMessage = `Coluna não encontrada. Verifique a consulta SQL. Detalhes: ${error.message}`;
     }
 
     return NextResponse.json(
@@ -69,8 +100,6 @@ export async function GET(request: Request) {
     // =======================================================================
     // PASSO 5: FECHAR A CONEXÃO
     // =======================================================================
-    // Garante que a conexão com o banco de dados seja sempre fechada,
-    // independentemente de sucesso ou falha.
     if (connection) {
       await connection.end();
     }
