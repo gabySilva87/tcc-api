@@ -26,9 +26,10 @@ export async function GET(request: Request) {
     // =======================================================================
     // A consulta junta tb_encomenda com tb_endereco para obter os detalhes do endereço.
     // O filtro de status foi removido pois a coluna não existe.
+    // Usa nr_encomenda como id_encomenda.
     const [rows] = await connection.execute(
       `SELECT 
-        e.id_encomenda, 
+        e.nr_encomenda as id_encomenda,
         e.nr_encomenda, 
         e.nm_cliente, 
         e.created_at,

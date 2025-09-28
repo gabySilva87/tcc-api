@@ -15,7 +15,7 @@ import Image from 'next/image';
 
 // Define a interface para o formato de uma rota, garantindo a tipagem dos dados.
 interface Route {
-  id: number;
+  id: string | number;
   title: string;
   description: string;
   address: string;
@@ -168,5 +168,6 @@ export default function PendingTab() {
     </div>
   );
 }
+
 
 
