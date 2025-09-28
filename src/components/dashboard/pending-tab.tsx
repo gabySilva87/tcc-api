@@ -24,7 +24,7 @@ interface Route {
 }
 
 // Componente para a aba de rotas/entregas.
-export default function RoutesTab() {
+export default function PendingTab() {
   // Estados para gerenciar a lista de rotas, o estado de carregamento e possíveis erros.
   const [routes, setRoutes] = useState<Route[]>([]);
   const [loading, setLoading] = useState(true);
@@ -103,7 +103,7 @@ export default function RoutesTab() {
             <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                     <Truck className="w-6 h-6 text-primary" />
-                    Entregas Pendentes
+                    Entregas Pendentes do Dia
                 </CardTitle>
             </CardHeader>
             <CardContent className="flex-1 overflow-hidden p-0">
@@ -175,3 +175,4 @@ export default function RoutesTab() {
     </div>
   );
 }
+

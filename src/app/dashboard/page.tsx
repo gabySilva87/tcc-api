@@ -7,20 +7,21 @@ import { useState, useEffect } from "react";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 // Importa ícones da biblioteca lucide-react.
-import { User, Map } from "lucide-react";
+import { User, Map, CheckCheck } from "lucide-react";
 // Importa o componente de imagem otimizada do Next.js.
 import Image from "next/image";
 
 // Importa componentes customizados da aplicação.
 import { LogoutButton } from "@/components/logout-button";
-import RoutesTab from "@/components/dashboard/routes-tab";
+import PendingTab from "@/components/dashboard/pending-tab";
+import DeliveredTab from "@/components/dashboard/delivered-tab";
 import ProfileTab from "@/components/dashboard/profile-tab";
 
 // Componente principal da página da dashboard.
 export default function DashboardPage() {
   // Define um estado para armazenar o nome do motorista.
   const [driverName, setDriverName] = useState('');
-  const [activeTab, setActiveTab] = useState('routes');
+  const [activeTab, setActiveTab] = useState('pending');
 
   // `useEffect` é usado para executar código do lado do cliente após a montagem do componente.
   // Neste caso, ele busca o nome do motorista que foi salvo no `sessionStorage` na tela de login.
@@ -83,20 +84,25 @@ export default function DashboardPage() {
         {/* Componente de Abas (`Tabs`) para organizar o conteúdo da dashboard. */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           {/* Lista de gatilhos (os "botões" das abas). */}
-          <TabsList className="grid w-full grid-cols-2 bg-muted/50 p-1 h-auto">
-            <TabsTrigger value="routes" className="py-2.5">
-              <Map className="w-4 h-4 mr-2"/>
-              Rotas
-            </TabsTrigger>
-            <TabsTrigger value="profile" className="py-2.5">
-              <User className="w-4 h-4 mr-2"/>
-              Perfil
-            </TabsTrigger>
-          </TabsList>
+           {activeTab !== 'profile' && (
+            <TabsList className="grid w-full grid-cols-2 bg-muted/50 p-1 h-auto">
+              <TabsTrigger value="pending" className="py-2.5">
+                <Map className="w-4 h-4 mr-2"/>
+                Pendentes
+              </TabsTrigger>
+              <TabsTrigger value="delivered" className="py-2.5">
+                <CheckCheck className="w-4 h-4 mr-2"/>
+                Entregues
+              </TabsTrigger>
+            </TabsList>
+           )}
           
           {/* Conteúdo de cada aba. Apenas o conteúdo da aba ativa é exibido. */}
-          <TabsContent value="routes" className="mt-6">
-            <RoutesTab />
+          <TabsContent value="pending" className="mt-6">
+            <PendingTab />
+          </TabsContent>
+          <TabsContent value="delivered" className="mt-6">
+            <DeliveredTab />
           </TabsContent>
           <TabsContent value="profile" className="mt-6">
             {/* Passa o nome do motorista como propriedade para a aba de perfil. */}
