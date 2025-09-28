@@ -23,19 +23,17 @@ export async function GET(request: Request) {
     // =======================================================================
     // PASSO 2: CONSULTA SQL PARA BUSCAR DADOS
     // =======================================================================
-    // A consulta foi atualizada para usar os nomes de coluna corretos da tb_encomenda
-    // e fazer um JOIN com tb_endereco para obter a descrição do endereço.
+    // A consulta foi simplificada para buscar apenas da tb_encomenda
+    // e filtrar pelo status 'pendente'.
     const [rows] = await connection.execute(
       `SELECT 
-        e.id_encomenda, 
-        e.nr_encomenda, 
-        e.nm_cliente, 
-        CONCAT(en.ds_logradouro, ', ', en.nr_logradouro, ' - ', en.nm_bairro, ', ', en.nm_cidade, ' - ', en.nm_uf) as ds_endereco,
-        e.nm_status_encomenda, 
-        e.created_at 
-       FROM tb_encomenda e
-       LEFT JOIN tb_endereco en ON e.cd_endereco = en.id_endereco
-       WHERE e.nm_status_encomenda = 'pendente'`
+        id_encomenda, 
+        nr_encomenda, 
+        nm_cliente, 
+        nm_status_encomenda, 
+        created_at 
+       FROM tb_encomenda
+       WHERE nm_status_encomenda = 'pendente'`
     );
 
     // =======================================================================
@@ -47,7 +45,7 @@ export async function GET(request: Request) {
       id: row.id_encomenda,
       title: `Encomenda #${row.nr_encomenda}`, // Usa o número da encomenda como título.
       description: `Cliente: ${row.nm_cliente}`, // Usa o nome do cliente na descrição.
-      address: row.ds_endereco || 'Endereço não disponível', // Endereço obtido do JOIN.
+      address: 'Endereço não disponível', // Placeholder, já que não temos a tabela de endereço.
       status: row.nm_status_encomenda,
       // Formata a data de criação para exibir apenas a hora e o minuto no formato brasileiro.
       time: new Date(row.created_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
