@@ -15,7 +15,6 @@ import Image from "next/image";
 import { LogoutButton } from "@/components/logout-button";
 import RoutesTab from "@/components/dashboard/routes-tab";
 import ProfileTab from "@/components/dashboard/profile-tab";
-import ReportsTab from "@/components/dashboard/reports-tab";
 
 // Componente principal da página da dashboard.
 export default function DashboardPage() {
