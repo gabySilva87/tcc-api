@@ -25,6 +25,7 @@ export async function GET(request: Request) {
     // PASSO 2: CONSULTA SQL PARA BUSCAR DADOS
     // =======================================================================
     // A consulta junta tb_encomenda com tb_endereco para obter os detalhes completos.
+    // A cláusula WHERE foi removida pois a coluna de status não existe na tabela.
     const [rows] = await connection.execute(
       `SELECT 
         e.nr_encomenda, 
@@ -61,7 +62,7 @@ export async function GET(request: Request) {
           title: `Encomenda #${row.nr_encomenda}`,
           description: `Cliente: ${row.nm_cliente}`,
           address: fullAddress || 'Endereço indisponível',
-          status: 'pendente',
+          status: 'pendente', // Status definido estaticamente para manter a UI.
           time: new Date(row.created_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
           read: false
         };
