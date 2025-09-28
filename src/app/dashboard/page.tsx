@@ -77,9 +77,8 @@ export default function DashboardPage() {
 
       {/* Conteúdo principal da página. */}
       <main className="container mx-auto p-4 sm:p-6 lg:p-8 flex-1">
-        {/* Renderização condicional: se a aba de perfil NÃO estiver ativa, mostra a saudação e as abas. */}
-        {activeTab !== 'profile' ? (
-          <>
+        {/* Container para as abas principais. Fica oculto quando a aba de perfil está ativa. */}
+        <div className={activeTab !== 'profile' ? 'block' : 'hidden'}>
             <div className="mb-8">
               <h2 className="text-3xl font-bold tracking-tight text-foreground">Bem-vindo, {driverName || 'Motorista'}!</h2>
               <p className="text-muted-foreground">Aqui estão suas atualizações mais recentes.</p>
@@ -107,12 +106,12 @@ export default function DashboardPage() {
                 <DeliveredTab />
               </TabsContent>
             </Tabs>
-          </>
-        ) : (
-           /* Renderização condicional: se a aba de perfil ESTIVER ativa, mostra apenas o componente de perfil. */
-           /* Passa o nome do motorista e a função para mudar de aba como propriedades. */
+        </div>
+        
+        {/* Container para a aba de perfil. Fica oculto a menos que a aba de perfil esteja ativa. */}
+        <div className={activeTab === 'profile' ? 'block' : 'hidden'}>
           <ProfileTab driverName={driverName} onBack={() => setActiveTab('pending')}/>
-        )}
+        </div>
       </main>
     </div>
   );
