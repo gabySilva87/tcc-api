@@ -1,6 +1,4 @@
 
-'use server';
-
 import { createDecipheriv } from 'crypto';
 
 // Algoritmo de criptografia. Deve ser o mesmo usado para criptografar.
