@@ -140,7 +140,7 @@ export default function PendingTab() {
       
       {/* Coluna da direita: detalhes da rota selecionada. */}
       <div className="md:col-span-2">
-        {selectedRoute ? (
+        {selectedRoute && (
             // Se uma rota estiver selecionada, exibe seus detalhes.
             <Card>
                 <CardHeader>
@@ -163,12 +163,6 @@ export default function PendingTab() {
                 <Button className="w-full mt-6 bg-primary hover:bg-primary/90 text-primary-foreground">Iniciar Rota</Button>
                 </CardContent>
             </Card>
-        ) : (
-          <Card className="flex items-center justify-center h-full min-h-[400px]">
-             <CardContent>
-              <p className="text-muted-foreground">Selecione uma entrega para ver os detalhes.</p>
-             </CardContent>
-          </Card>
         )}
       </div>
     </div>
