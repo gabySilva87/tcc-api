@@ -1,16 +1,19 @@
 
 'use client';
 
+// Importa os hooks do React para gerenciar estado e ciclo de vida.
 import { useState, useEffect } from 'react';
+// Importa componentes de UI da biblioteca ShadCN.
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { Button } from '@/components/ui/button';
 import { AlertTriangle, MapPin, Truck } from "lucide-react";
-import { Skeleton } from "@/components/ui/skeleton";
-import { ScrollArea } from "@/components/ui/scroll-area";
+import { Skeleton } from "@/components/ui/skeleton"; // Componente para mostrar um placeholder de carregamento.
+import { ScrollArea } from "@/components/ui/scroll-area"; // Componente para adicionar uma barra de rolagem.
 import Image from 'next/image';
 
+// Define a interface para o formato de uma rota, garantindo a tipagem dos dados.
 interface Route {
   id: number;
   title: string;
@@ -20,35 +23,46 @@ interface Route {
   time: string;
 }
 
+// Componente para a aba de rotas/entregas.
 export default function RoutesTab() {
+  // Estados para gerenciar a lista de rotas, o estado de carregamento e possíveis erros.
   const [routes, setRoutes] = useState<Route[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  // Estado para armazenar a rota que está selecionada na lista.
   const [selectedRoute, setSelectedRoute] = useState<Route | null>(null);
 
+  // `useEffect` para buscar os dados das rotas da API quando o componente é montado.
   useEffect(() => {
     async function fetchRoutes() {
       try {
+        // Faz a chamada `fetch` para a nossa API interna de rotas.
         const response = await fetch('/api/routes');
         const data = await response.json();
         
+        // Se a resposta da API não foi bem-sucedida (ex: erro no servidor)...
         if (!response.ok) {
+          // Lança um erro com a mensagem retornada pela API.
           throw new Error(data.message || 'Falha ao buscar os dados das rotas.');
         }
-        setRoutes(data);
+        setRoutes(data); // Atualiza o estado com as rotas recebidas.
         if (data.length > 0) {
-            setSelectedRoute(data[0]); // Seleciona a primeira rota por padrão
+            // Seleciona a primeira rota da lista por padrão para exibir os detalhes.
+            setSelectedRoute(data[0]); 
         }
       } catch (err: any) {
+        // Se ocorrer um erro durante o `fetch` ou na API, atualiza o estado de erro.
         setError(err.message);
       } finally {
+        // Independentemente do resultado, define o carregamento como `false`.
         setLoading(false);
       }
     }
 
     fetchRoutes();
-  }, []);
+  }, []); // O array de dependências vazio `[]` garante que o efeito rode apenas uma vez.
 
+  // Se os dados ainda estão sendo carregados, exibe um esqueleto de UI.
   if (loading) {
     return (
         <div className="grid gap-8 md:grid-cols-3">
@@ -62,6 +76,7 @@ export default function RoutesTab() {
     );
   }
 
+  // Se ocorreu um erro ao buscar os dados, exibe um cartão de alerta com a mensagem de erro.
   if (error) {
     return (
         <Card className="border-destructive/50">
@@ -79,8 +94,10 @@ export default function RoutesTab() {
     );
   }
 
+  // Se os dados foram carregados com sucesso, exibe a interface principal.
   return (
     <div className="grid gap-8 md:grid-cols-3">
+      {/* Coluna da esquerda: lista de entregas pendentes. */}
       <div className="md:col-span-1">
         <Card className="flex-1 flex flex-col h-full">
             <CardHeader>
@@ -91,9 +108,11 @@ export default function RoutesTab() {
             </CardHeader>
             <CardContent className="flex-1 overflow-hidden p-0">
                 {routes.length > 0 ? (
+                // Se houver rotas, exibe uma lista com barra de rolagem.
                 <ScrollArea className="h-[400px]">
                     <ul className="space-y-0">
                     {routes.map((route, index) => (
+                        // Cada item da lista é clicável e atualiza a rota selecionada.
                         <li key={route.id} onClick={() => setSelectedRoute(route)} className={`cursor-pointer p-4 hover:bg-muted/50 ${selectedRoute?.id === route.id ? 'bg-muted' : ''}`}>
                             <div className="flex gap-4 items-start">
                                 <div className="flex-1">
@@ -103,12 +122,14 @@ export default function RoutesTab() {
                                 </div>
                                 <MapPin className="w-5 h-5 text-muted-foreground flex-shrink-0 mt-1" />
                             </div>
+                            {/* Adiciona um separador entre os itens, exceto no último. */}
                             {index < routes.length - 1 && <Separator className="mt-4" />}
                         </li>
                     ))}
                     </ul>
                 </ScrollArea>
                 ) : (
+                // Se não houver rotas, exibe uma mensagem.
                 <div className="p-4 text-center text-muted-foreground">
                     <p>Nenhuma entrega pendente no momento.</p>
                 </div>
@@ -117,8 +138,10 @@ export default function RoutesTab() {
         </Card>
       </div>
       
+      {/* Coluna da direita: detalhes da rota selecionada. */}
       <div className="md:col-span-2">
         {selectedRoute ? (
+            // Se uma rota estiver selecionada, exibe seus detalhes.
             <Card>
                 <CardHeader>
                     <CardTitle>{selectedRoute.title}</CardTitle>
@@ -127,9 +150,11 @@ export default function RoutesTab() {
                     </CardContent>
                 </CardHeader>
                 <CardContent>
+                {/* Imagem de placeholder para o mapa. */}
                 <div className="aspect-video bg-muted rounded-lg flex items-center justify-center overflow-hidden">
                     <Image src="https://picsum.photos/seed/map/400/225" width={400} height={225} alt="Map of next delivery" className="object-cover w-full h-full" data-ai-hint="city map" />
                 </div>
+                {/* Informações detalhadas da rota. */}
                 <div className="mt-4 space-y-3">
                     <p className="flex justify-between items-center text-sm"><strong>Horário Previsto:</strong> <span>{selectedRoute.time}</span></p>
                     <p className="flex justify-between items-center text-sm"><strong>Endereço:</strong> <span>{selectedRoute.address}</span></p>
@@ -139,6 +164,7 @@ export default function RoutesTab() {
                 </CardContent>
             </Card>
         ) : (
+            // Se nenhuma rota estiver selecionada (ou se a lista estiver vazia), exibe uma mensagem.
             <Card className="flex items-center justify-center h-full">
                 <CardContent>
                     <p className="text-muted-foreground">Selecione uma rota para ver os detalhes.</p>

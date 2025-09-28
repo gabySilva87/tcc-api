@@ -1,10 +1,13 @@
 
 'use client';
 
+// Importa os componentes de UI da biblioteca ShadCN.
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { BarChart2, Calendar, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
+// Este é um componente de placeholder para a aba de relatórios.
+// Atualmente, ele apenas exibe uma interface estática indicando que a funcionalidade está em desenvolvimento.
 export default function ReportsTab() {
   return (
     <Card>
@@ -18,6 +21,7 @@ export default function ReportsTab() {
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
+        {/* Seção para filtros de data (atualmente apenas visual). */}
         <div className="flex flex-col sm:flex-row items-center gap-4">
             <div className="flex items-center gap-2">
                 <Calendar className="w-5 h-5 text-muted-foreground" />
@@ -30,6 +34,7 @@ export default function ReportsTab() {
             </div>
         </div>
 
+        {/* Mensagem informando que a funcionalidade de gráficos ainda não está pronta. */}
         <div className="border rounded-lg p-6 text-center bg-muted/20">
             <p className="text-muted-foreground">
                 A funcionalidade de gráficos e relatórios está em desenvolvimento.
@@ -39,6 +44,7 @@ export default function ReportsTab() {
             </p>
         </div>
         
+        {/* Botão de exportação desabilitado. */}
         <Button disabled className="w-full sm:w-auto">
           <Download className="mr-2 h-4 w-4" />
           Exportar Relatório (Em Breve)
