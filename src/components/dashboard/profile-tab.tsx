@@ -2,19 +2,20 @@
 'use client'
 
 // Importa os componentes de UI da biblioteca ShadCN.
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
 // Importa ícones da biblioteca lucide-react.
-import { FileText, Smartphone, Truck, Star, Shield } from "lucide-react";
+import { FileText, Smartphone, Truck, Star, Shield, ArrowLeft } from "lucide-react";
 
 // Define a interface para as propriedades (`props`) que este componente recebe.
-// Neste caso, ele espera receber o `driverName` como uma string.
 interface ProfileTabProps {
-    driverName: string;
+    driverName: string; // O nome do motorista.
+    onBack: () => void; // Uma função para ser chamada quando o botão de voltar for clicado.
 }
 
-// O componente ProfileTab recebe as `props` (incluindo `driverName`).
-export default function ProfileTab({ driverName }: ProfileTabProps) {
+// O componente ProfileTab recebe as `props` (incluindo `driverName` e `onBack`).
+export default function ProfileTab({ driverName, onBack }: ProfileTabProps) {
     // Determina a inicial do motorista para usar no `AvatarFallback`.
     const driverInitial = driverName ? driverName.charAt(0).toUpperCase() : 'M';
 
@@ -76,6 +77,14 @@ export default function ProfileTab({ driverName }: ProfileTabProps) {
                     </div>
                 </div>
             </CardContent>
+            {/* Rodapé do card, usado para o botão de voltar. */}
+            <CardFooter>
+                {/* O botão `onBack` chama a função passada por prop para mudar a aba. */}
+                <Button variant="outline" onClick={onBack} className="w-full">
+                    <ArrowLeft className="w-4 h-4 mr-2" />
+                    Voltar para Entregas
+                </Button>
+            </CardFooter>
         </Card>
     );
 }

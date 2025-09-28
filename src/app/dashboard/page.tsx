@@ -7,7 +7,7 @@ import { useState, useEffect } from "react";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 // Importa ícones da biblioteca lucide-react.
-import { User, Map, CheckCheck } from "lucide-react";
+import { Map, CheckCheck } from "lucide-react";
 // Importa o componente de imagem otimizada do Next.js.
 import Image from "next/image";
 
@@ -21,6 +21,7 @@ import ProfileTab from "@/components/dashboard/profile-tab";
 export default function DashboardPage() {
   // Define um estado para armazenar o nome do motorista.
   const [driverName, setDriverName] = useState('');
+  // Define o estado da aba ativa. 'pending' é o valor inicial.
   const [activeTab, setActiveTab] = useState('pending');
 
   // `useEffect` é usado para executar código do lado do cliente após a montagem do componente.
@@ -58,6 +59,7 @@ export default function DashboardPage() {
             </div>
             {/* Seção do perfil do usuário e botão de logout. */}
             <div className="flex items-center gap-3">
+               {/* Ao clicar no avatar, a aba ativa muda para 'profile'. */}
                <button onClick={() => setActiveTab('profile')} className="rounded-full focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2">
                 <Avatar>
                   <AvatarImage src="https://picsum.photos/seed/driver/100/100" alt="Motorista" data-ai-hint="driver portrait" />
@@ -75,44 +77,42 @@ export default function DashboardPage() {
 
       {/* Conteúdo principal da página. */}
       <main className="container mx-auto p-4 sm:p-6 lg:p-8 flex-1">
-        <div className="mb-8">
-          {/* O nome do motorista é exibido dinamicamente na saudação. */}
-          <h2 className="text-3xl font-bold tracking-tight text-foreground">Bem-vindo, {driverName || 'Motorista'}!</h2>
-          <p className="text-muted-foreground">Aqui estão suas atualizações mais recentes.</p>
-        </div>
+        {/* Renderização condicional: se a aba de perfil NÃO estiver ativa, mostra a saudação e as abas. */}
+        {activeTab !== 'profile' ? (
+          <>
+            <div className="mb-8">
+              <h2 className="text-3xl font-bold tracking-tight text-foreground">Bem-vindo, {driverName || 'Motorista'}!</h2>
+              <p className="text-muted-foreground">Aqui estão suas atualizações mais recentes.</p>
+            </div>
 
-        {/* Componente de Abas (`Tabs`) para organizar o conteúdo da dashboard. */}
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          {/* Lista de gatilhos (os "botões" das abas). */}
-          <TabsList className="grid w-full grid-cols-2 bg-muted/50 p-1 h-auto">
-            <TabsTrigger value="pending" className="py-2.5">
-              <Map className="w-4 h-4 mr-2"/>
-              Pendentes
-            </TabsTrigger>
-            <TabsTrigger value="delivered" className="py-2.5">
-              <CheckCheck className="w-4 h-4 mr-2"/>
-              Entregues
-            </TabsTrigger>
-             {/* Esta aba de perfil está oculta, mas existe para que o sistema de abas funcione.
-                 O clique no avatar no header é o que realmente ativa esta aba. */}
-            <TabsTrigger value="profile" className="hidden">
-              <User className="w-4 h-4 mr-2"/>
-              Perfil
-            </TabsTrigger>
-          </TabsList>
-          
-          {/* Conteúdo de cada aba. Apenas o conteúdo da aba ativa é exibido. */}
-          <TabsContent value="pending" className="mt-6">
-            <PendingTab />
-          </TabsContent>
-          <TabsContent value="delivered" className="mt-6">
-            <DeliveredTab />
-          </TabsContent>
-          <TabsContent value="profile" className="mt-6">
-            {/* Passa o nome do motorista como propriedade para a aba de perfil. */}
-            <ProfileTab driverName={driverName}/>
-          </TabsContent>
-        </Tabs>
+            {/* Componente de Abas (`Tabs`) para organizar o conteúdo da dashboard. */}
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+              {/* Lista de gatilhos (os "botões" das abas). */}
+              <TabsList className="grid w-full grid-cols-2 bg-muted/50 p-1 h-auto">
+                <TabsTrigger value="pending" className="py-2.5">
+                  <Map className="w-4 h-4 mr-2"/>
+                  Pendentes
+                </TabsTrigger>
+                <TabsTrigger value="delivered" className="py-2.5">
+                  <CheckCheck className="w-4 h-4 mr-2"/>
+                  Entregues
+                </TabsTrigger>
+              </TabsList>
+              
+              {/* Conteúdo de cada aba. Apenas o conteúdo da aba ativa é exibido. */}
+              <TabsContent value="pending" className="mt-6">
+                <PendingTab />
+              </TabsContent>
+              <TabsContent value="delivered" className="mt-6">
+                <DeliveredTab />
+              </TabsContent>
+            </Tabs>
+          </>
+        ) : (
+           /* Renderização condicional: se a aba de perfil ESTIVER ativa, mostra apenas o componente de perfil. */
+           /* Passa o nome do motorista e a função para mudar de aba como propriedades. */
+          <ProfileTab driverName={driverName} onBack={() => setActiveTab('pending')}/>
+        )}
       </main>
     </div>
   );
