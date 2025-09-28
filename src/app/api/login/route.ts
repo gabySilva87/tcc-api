@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import mysql from 'mysql2/promise';
+import bcrypt from 'bcryptjs';
 
 // A função POST é acionada quando o formulário de login é enviado.
 export async function POST(request: Request) {
@@ -22,7 +23,7 @@ export async function POST(request: Request) {
     connection = await mysql.createConnection({
       host: process.env.DB_HOST,
       port: Number(process.env.DB_PORT),
-      user: process.env.DB_USER,
+      user: process.env.DB_USERNAME,
       password: process.env.DB_PASSWORD,
       database: process.env.DB_DATABASE,
       ssl: process.env.DB_SSL === 'true' ? { rejectUnauthorized: true } : undefined,
@@ -32,8 +33,8 @@ export async function POST(request: Request) {
     // PASSO 2: CONSULTA SQL PARA VERIFICAR AS CREDENCIAIS
     // =======================================================================
     const [rows] = await connection.execute(
-      'SELECT nm_motorista FROM tb_motorista WHERE nm_usuario = ? AND nr_senha = ?',
-      [usuario, senha]
+      'SELECT nm_usuario, nr_senha, nm_motorista FROM tb_motorista WHERE nm_usuario = ?',
+      [usuario]
     );
 
     // =======================================================================
@@ -41,12 +42,23 @@ export async function POST(request: Request) {
     // =======================================================================
     if (Array.isArray(rows) && rows.length > 0) {
       const driver = (rows as any)[0];
+      const senhaCorreta = await bcrypt.compare(senha, driver.nr_senha);
       // Retorna sucesso e o nome do motorista.
-      return NextResponse.json({ success: true, message: 'Login bem-sucedido!', driverName: driver.nm_motorista });
-    } else {
+
+      if(senhaCorreta){
+        return NextResponse.json({ success: true, message: 'Login bem-sucedido!', driverName: driver.nm_motorista });
+      }
+      else{
+        return NextResponse.json(
+          { success: false, message: 'Credenciais inválidas. Verifique seu usuário e senha.' },
+          { status: 401 }
+        );
+      }
+    }
+    else{
       return NextResponse.json(
-        { success: false, message: 'Credenciais inválidas. Verifique seu usuário e senha.' },
-        { status: 401 }
+        { success: false, message: 'Usuário não encontrado.' },
+        { status: 404 }
       );
     }
   } catch (error: any) {
@@ -60,7 +72,7 @@ export async function POST(request: Request) {
     }
     if (error.code === 'ER_ACCESS_DENIED_ERROR') {
         return NextResponse.json(
-            { success: false, message: `Acesso negado para o usuário '${process.env.DB_USER}'. Verifique o usuário e a senha do banco de dados.` },
+            { success: false, message: `Acesso negado para o usuário '${process.env.DB_USERNAME}'. Verifique o usuário e a senha do banco de dados.` },
             { status: 500 }
         );
     }
