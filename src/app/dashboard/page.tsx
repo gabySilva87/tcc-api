@@ -84,18 +84,22 @@ export default function DashboardPage() {
         {/* Componente de Abas (`Tabs`) para organizar o conteúdo da dashboard. */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           {/* Lista de gatilhos (os "botões" das abas). */}
-           {activeTab !== 'profile' && (
-            <TabsList className="grid w-full grid-cols-2 bg-muted/50 p-1 h-auto">
-              <TabsTrigger value="pending" className="py-2.5">
-                <Map className="w-4 h-4 mr-2"/>
-                Pendentes
-              </TabsTrigger>
-              <TabsTrigger value="delivered" className="py-2.5">
-                <CheckCheck className="w-4 h-4 mr-2"/>
-                Entregues
-              </TabsTrigger>
-            </TabsList>
-           )}
+          <TabsList className="grid w-full grid-cols-2 bg-muted/50 p-1 h-auto">
+            <TabsTrigger value="pending" className="py-2.5">
+              <Map className="w-4 h-4 mr-2"/>
+              Pendentes
+            </TabsTrigger>
+            <TabsTrigger value="delivered" className="py-2.5">
+              <CheckCheck className="w-4 h-4 mr-2"/>
+              Entregues
+            </TabsTrigger>
+             {/* Esta aba de perfil está oculta, mas existe para que o sistema de abas funcione.
+                 O clique no avatar no header é o que realmente ativa esta aba. */}
+            <TabsTrigger value="profile" className="hidden">
+              <User className="w-4 h-4 mr-2"/>
+              Perfil
+            </TabsTrigger>
+          </TabsList>
           
           {/* Conteúdo de cada aba. Apenas o conteúdo da aba ativa é exibido. */}
           <TabsContent value="pending" className="mt-6">

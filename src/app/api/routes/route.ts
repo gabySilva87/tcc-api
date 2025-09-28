@@ -31,7 +31,7 @@ export async function GET(request: Request) {
         e.id_encomenda, 
         e.nr_encomenda, 
         e.nm_cliente, 
-        e.nm_status_encomenda, 
+        e.ds_status, 
         e.created_at,
         end.nr_cep,
         end.nr_casa,
@@ -41,7 +41,7 @@ export async function GET(request: Request) {
         end.nm_estado
        FROM tb_encomenda as e
        LEFT JOIN tb_endereco as end ON e.cd_endereco = end.cd_endereco
-       WHERE e.nm_status_encomenda = 'pendente'`
+       WHERE e.ds_status = 'pendente'`
     );
 
     // =======================================================================
@@ -67,7 +67,7 @@ export async function GET(request: Request) {
           title: `Encomenda #${row.nr_encomenda}`,
           description: `Cliente: ${row.nm_cliente}`,
           address: fullAddress || 'Endereço indisponível',
-          status: row.nm_status_encomenda,
+          status: row.ds_status,
           time: new Date(row.created_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
           read: false
         };
@@ -79,7 +79,7 @@ export async function GET(request: Request) {
           title: `Encomenda #${row.nr_encomenda}`,
           description: `Cliente: ${row.nm_cliente}`,
           address: 'Erro ao processar endereço',
-          status: row.nm_status_encomenda,
+          status: row.ds_status,
           time: new Date(row.created_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
           read: false
         };
