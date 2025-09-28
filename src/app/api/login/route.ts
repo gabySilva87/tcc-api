@@ -49,9 +49,18 @@ export async function POST(request: Request) {
     if (Array.isArray(rows) && rows.length > 0) {
       const driver = (rows as any)[0];
       
-      // Compara a senha enviada pelo usuário com a senha criptografada do banco usando `bcrypt`.
-      // `bcrypt.compare` é uma função segura que lida com o "sal" e o hash.
-      const senhaCorreta = await bcrypt.compare(senha, driver.nr_senha);
+      // Verifica se a senha armazenada parece ser um hash bcrypt.
+      // Hashes bcrypt geralmente começam com $2a$, $2b$ ou $2y$.
+      const isHashed = driver.nr_senha.startsWith('$2');
+      
+      let senhaCorreta = false;
+      if (isHashed) {
+        // Se a senha no banco é um hash, usa bcrypt.compare.
+        senhaCorreta = await bcrypt.compare(senha, driver.nr_senha);
+      } else {
+        // Se for texto puro, faz uma comparação simples.
+        senhaCorreta = senha === driver.nr_senha;
+      }
       
       if(senhaCorreta){
         // Se a senha estiver correta, retorna uma resposta de sucesso com o nome do motorista.
