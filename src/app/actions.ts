@@ -3,6 +3,7 @@
 import { z } from 'zod';
 import { redirect } from 'next/navigation';
 import { revalidatePath } from 'next/cache';
+import { headers } from 'next/headers';
 
 // Define o schema de validação para os dados do formulário de login usando Zod.
 // Isso garante que os dados enviados pelo formulário tenham o formato esperado.
@@ -35,8 +36,11 @@ export async function login(prevState: any, formData: FormData) {
   const { usuario, senha } = validatedFields.data;
 
   try {
-    // Monta a URL base para a chamada da API, usando uma variável de ambiente ou um valor padrão.
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:9002';
+    // Constrói a URL dinamicamente para garantir que a chamada fetch funcione no servidor.
+    const host = headers().get('host');
+    const protocol = process.env.NODE_ENV === 'development' ? 'http' : 'https';
+    const baseUrl = `${protocol}://${host}`;
+
     // Faz uma chamada `fetch` para a nossa API interna de login (`/api/login`).
     const response = await fetch(`${baseUrl}/api/login`, {
       method: 'POST',
