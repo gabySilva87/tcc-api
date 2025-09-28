@@ -3,7 +3,7 @@
 // Importa os hooks do React para gerenciar estado e ciclo de vida.
 import { useState, useEffect, useCallback } from 'react';
 // Importa componentes de UI da biblioteca ShadCN.
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { Button } from '@/components/ui/button';
@@ -104,9 +104,9 @@ export default function PendingTab() {
 
   // Se os dados foram carregados com sucesso, exibe a interface principal.
   return (
-    <div className="grid gap-8 md:grid-cols-3">
+    <div className="grid gap-8 md:grid-cols-1 lg:grid-cols-3">
       {/* Coluna da esquerda: lista de entregas pendentes. */}
-      <div className="md:col-span-1">
+      <div className="lg:col-span-1">
         <Card className="flex-1 flex flex-col h-full">
             <CardHeader>
                 <CardTitle className="flex items-center gap-2">
@@ -156,8 +156,8 @@ export default function PendingTab() {
       </div>
       
       {/* Coluna da direita: detalhes da rota selecionada. */}
-      <div className="md:col-span-2">
-        {selectedRoute && (
+      <div className="lg:col-span-2">
+        {selectedRoute ? (
             // Se uma rota estiver selecionada, exibe seus detalhes.
             <Card>
                 <CardHeader>
@@ -187,6 +187,16 @@ export default function PendingTab() {
                 <Button className="w-full mt-6 text-lg py-6 bg-primary hover:bg-primary/90 text-primary-foreground">Iniciar Rota</Button>
                 </CardContent>
             </Card>
+        ) : (
+          routes.length > 0 && (
+            <Card className="hidden lg:flex items-center justify-center h-full min-h-[400px] bg-muted/30 border-dashed">
+              <div className="text-center text-muted-foreground">
+                <MapPin className="w-12 h-12 mx-auto mb-4" />
+                <h3 className="text-lg font-semibold">Selecione uma entrega</h3>
+                <p>Clique em um item da lista para ver os detalhes aqui.</p>
+              </div>
+            </Card>
+          )
         )}
       </div>
     </div>

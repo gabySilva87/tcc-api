@@ -25,20 +25,17 @@ export async function GET(request: Request) {
     // PASSO 2: CONSULTA SQL PARA BUSCAR DADOS
     // =======================================================================
     // A consulta junta tb_encomenda com tb_endereco para obter os detalhes completos.
-    // A cláusula WHERE foi removida pois a coluna de status não existe na tabela.
     const [rows] = await connection.execute(
       `SELECT 
+        e.id_encomenda,
         e.nr_encomenda, 
         e.nm_cliente, 
         e.created_at,
         end.nr_cep,
         end.nr_casa,
-        end.ds_complemento,
-        end.nm_bairro,
-        end.nm_cidade,
-        end.nm_estado
+        end.ds_complemento
        FROM tb_encomenda as e
-       LEFT JOIN tb_endereco as end ON e.cd_endereco = end.cd_endereco`
+       LEFT JOIN tb_endereco as end ON e.cd_endereco = end.id_endereco`
     );
 
     // =======================================================================
@@ -46,19 +43,15 @@ export async function GET(request: Request) {
     // =======================================================================
     const routes = (rows as any[]).map(row => {
       try {
-        const cep = row.nr_cep ? decrypt(row.nr_cep) : '';
-        const numero = row.nr_casa ? decrypt(row.nr_casa) : '';
+        const cep = row.nr_cep ? `CEP: ${decrypt(row.nr_cep)}` : '';
+        const numero = row.nr_casa ? `Nº ${decrypt(row.nr_casa)}` : '';
         const complemento = row.ds_complemento ? decrypt(row.ds_complemento) : '';
-        const bairro = row.nm_bairro ? decrypt(row.nm_bairro) : '';
-        const cidade = row.nm_cidade ? decrypt(row.nm_cidade) : '';
-        const estado = row.nm_estado ? decrypt(row.nm_estado) : '';
 
-        // Formata o endereço completo de forma mais legível.
-        const addressParts = [bairro, cidade, estado].filter(Boolean).join(' - ');
-        const fullAddress = [cep, addressParts, `Nº ${numero}`, complemento].filter(Boolean).join(', ');
+        // Formata o endereço completo de forma mais legível com as colunas existentes.
+        const fullAddress = [cep, numero, complemento].filter(Boolean).join(', ');
 
         return {
-          id: row.nr_encomenda,
+          id: row.id_encomenda,
           title: `Encomenda #${row.nr_encomenda}`,
           description: `Cliente: ${row.nm_cliente}`,
           address: fullAddress || 'Endereço indisponível',
@@ -69,7 +62,7 @@ export async function GET(request: Request) {
       } catch (e) {
         console.error(`Falha ao descriptografar dados para a encomenda #${row.nr_encomenda}:`, e);
         return {
-          id: row.nr_encomenda,
+          id: row.id_encomenda,
           title: `Encomenda #${row.nr_encomenda}`,
           description: `Cliente: ${row.nm_cliente}`,
           address: 'Erro ao processar endereço',
