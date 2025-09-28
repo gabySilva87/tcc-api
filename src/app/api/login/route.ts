@@ -35,7 +35,7 @@ export async function POST(request: Request) {
     // =======================================================================
     // PASSO 2: CONSULTA SQL PARA VERIFICAR AS CREDENCIAIS
     // =======================================================================
-    // Busca o usuário, sua senha criptografada (HASHED) e o nome do motorista no banco.
+    // Busca o usuário, sua senha criptografada (HASHED) e o nome do motorista na tabela de motoristas.
     // Usar `?` como placeholder previne ataques de SQL Injection.
     const [rows] = await connection.execute(
       'SELECT nm_usuario, nr_senha, nm_motorista FROM tb_motorista WHERE nm_usuario = ?',
