@@ -2,13 +2,15 @@
 'use client';
 
 import { useState, useEffect } from "react";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { User, Map, BarChart2 } from "lucide-react";
 import Image from "next/image";
-import RouteNotifications from "@/components/route-notifications";
+
 import { LogoutButton } from "@/components/logout-button";
+import RoutesTab from "@/components/dashboard/routes-tab";
+import ProfileTab from "@/components/dashboard/profile-tab";
+import ReportsTab from "@/components/dashboard/reports-tab";
 
 export default function DashboardPage() {
   const [driverName, setDriverName] = useState('');
@@ -55,29 +57,32 @@ export default function DashboardPage() {
           <p className="text-muted-foreground">Aqui estão suas atualizações mais recentes.</p>
         </div>
 
-        <div className="grid gap-8 md:grid-cols-3">
-          <div className="md:col-span-2 flex flex-col">
-            <RouteNotifications />
-          </div>
+        <Tabs defaultValue="routes" className="w-full">
+          <TabsList className="grid w-full grid-cols-3 bg-muted/50 p-1 h-auto">
+            <TabsTrigger value="routes" className="py-2.5">
+              <Map className="w-4 h-4 mr-2"/>
+              Rotas
+            </TabsTrigger>
+            <TabsTrigger value="profile" className="py-2.5">
+              <User className="w-4 h-4 mr-2"/>
+              Perfil
+            </TabsTrigger>
+            <TabsTrigger value="reports" className="py-2.5">
+              <BarChart2 className="w-4 h-4 mr-2"/>
+              Relatórios
+            </TabsTrigger>
+          </TabsList>
           
-          <Card className="md:col-span-1">
-            <CardHeader>
-              <CardTitle>Próxima Entrega</CardTitle>
-              <CardDescription>Centro da cidade</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="aspect-video bg-muted rounded-lg flex items-center justify-center overflow-hidden">
-                 <Image src="https://picsum.photos/seed/map/400/225" width={400} height={225} alt="Map of next delivery" className="object-cover w-full h-full" data-ai-hint="city map" />
-              </div>
-               <div className="mt-4 space-y-3">
-                <p className="flex justify-between items-center text-sm"><strong>Horário:</strong> <span>14:00</span></p>
-                <p className="flex justify-between items-center text-sm"><strong>Endereço:</strong> <span>Rua Principal, 123</span></p>
-                <div className="flex justify-between items-center text-sm"><strong>Status:</strong> <Badge variant="success">Pendente</Badge></div>
-               </div>
-               <Button className="w-full mt-6 bg-primary hover:bg-primary/90 text-primary-foreground">Iniciar Rota</Button>
-            </CardContent>
-          </Card>
-        </div>
+          <TabsContent value="routes" className="mt-6">
+            <RoutesTab />
+          </TabsContent>
+          <TabsContent value="profile" className="mt-6">
+            <ProfileTab driverName={driverName}/>
+          </TabsContent>
+          <TabsContent value="reports" className="mt-6">
+            <ReportsTab />
+          </TabsContent>
+        </Tabs>
       </main>
     </div>
   );
