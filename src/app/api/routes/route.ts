@@ -31,7 +31,6 @@ export async function GET(request: Request) {
         e.id_encomenda, 
         e.nr_encomenda, 
         e.nm_cliente, 
-        e.ds_status, 
         e.created_at,
         end.nr_cep,
         end.nr_casa,
@@ -67,7 +66,7 @@ export async function GET(request: Request) {
           title: `Encomenda #${row.nr_encomenda}`,
           description: `Cliente: ${row.nm_cliente}`,
           address: fullAddress || 'Endereço indisponível',
-          status: row.ds_status,
+          status: 'pendente', // Como a query filtra por 'pendente', podemos definir estaticamente.
           time: new Date(row.created_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
           read: false
         };
@@ -79,7 +78,7 @@ export async function GET(request: Request) {
           title: `Encomenda #${row.nr_encomenda}`,
           description: `Cliente: ${row.nm_cliente}`,
           address: 'Erro ao processar endereço',
-          status: row.ds_status,
+          status: 'pendente',
           time: new Date(row.created_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
           read: false
         };
