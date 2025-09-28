@@ -1,4 +1,3 @@
-
 'use client';
 
 // Importa os hooks do React para gerenciar estado e ciclo de vida.
@@ -43,7 +42,8 @@ export default function DashboardPage() {
     if (!isMounted) {
       return (
         <div className="space-y-8">
-            <Skeleton className="h-10 w-1/2" />
+            <Skeleton className="h-10 w-3/4" />
+            <Skeleton className="h-12 w-full" />
             <Skeleton className="h-[500px] w-full" />
         </div>
       );
@@ -64,11 +64,11 @@ export default function DashboardPage() {
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="grid w-full grid-cols-2 bg-muted/50 p-1 h-auto">
-            <TabsTrigger value="pending" className="py-2.5">
+            <TabsTrigger value="pending" className="py-2.5 text-sm">
               <Map className="w-4 h-4 mr-2"/>
               Pendentes
             </TabsTrigger>
-            <TabsTrigger value="delivered" className="py-2.5">
+            <TabsTrigger value="delivered" className="py-2.5 text-sm">
               <CheckCheck className="w-4 h-4 mr-2"/>
               Entregues
             </TabsTrigger>
@@ -112,7 +112,7 @@ export default function DashboardPage() {
                   <AvatarFallback>{driverName ? driverName.charAt(0) : 'M'}</AvatarFallback>
                 </Avatar>
                </button>
-              <p className="text-sm font-medium text-foreground hidden sm:block truncate">{driverName}</p>
+              <p className="text-sm font-medium text-foreground hidden sm:block truncate max-w-[150px]">{driverName}</p>
               <LogoutButton />
             </div>
           </div>

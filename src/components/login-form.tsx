@@ -114,8 +114,8 @@ export function LoginForm() {
             />
           </div>
           <div className="flex flex-col pt-2">
-            <CardTitle className="text-2xl md:text-4xl font-bold tracking-wider text-foreground">LogiDesk</CardTitle>
-            <p className="text-base md:text-lg text-primary font-semibold">Motorista</p>
+            <CardTitle className="text-3xl md:text-4xl font-bold tracking-wider text-foreground">LogiDesk</CardTitle>
+            <p className="text-md md:text-lg text-primary font-semibold">Motorista</p>
           </div>
         </CardHeader>
 
@@ -126,7 +126,7 @@ export function LoginForm() {
             {/* O `<Label>` melhora a acessibilidade, associando o texto ao campo de input. */}
             <Label htmlFor="usuario" className="text-foreground">Usuário</Label>
             {/* Campo de entrada de texto para o nome de usuário. */}
-            <Input id="usuario" type="text" name="usuario" placeholder="Digite seu usuário" required aria-describedby='usuario-error' className="bg-white text-black placeholder:text-gray-500 rounded-full px-5 py-3" />
+            <Input id="usuario" type="text" name="usuario" placeholder="Digite seu usuário" required aria-describedby='usuario-error' className="bg-white text-black placeholder:text-gray-500 rounded-full px-5 py-3 h-12" />
             {/* Contêiner para a mensagem de erro de validação do campo "usuário".
                 `aria-live="polite"` informa aos leitores de tela para anunciar a mensagem quando ela aparecer. */}
             <div id="usuario-error" aria-live="polite" aria-atomic="true">
@@ -137,7 +137,7 @@ export function LoginForm() {
           <div className="grid gap-2">
             <Label htmlFor="senha" className="text-foreground">Senha</Label>
             {/* Campo de entrada de senha. `type="password"` mascara o texto digitado. */}
-            <Input id="senha" type="password" name="senha" placeholder="Digite sua senha" required aria-describedby='senha-error' className="bg-white text-black placeholder:text-gray-500 rounded-full px-5 py-3"/>
+            <Input id="senha" type="password" name="senha" placeholder="Digite sua senha" required aria-describedby='senha-error' className="bg-white text-black placeholder:text-gray-500 rounded-full px-5 py-3 h-12"/>
             {/* Contêiner para a mensagem de erro de validação do campo "senha". */}
             <div id="senha-error" aria-live="polite" aria-atomic="true">
              {state?.errors?.senha && <p className="text-sm font-medium text-destructive">{state.errors.senha[0]}</p>}

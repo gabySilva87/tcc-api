@@ -1,4 +1,3 @@
-
 'use client';
 
 // Importa os hooks do React para gerenciar estado e ciclo de vida.
@@ -8,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { Button } from '@/components/ui/button';
-import { AlertTriangle, MapPin, Truck, RefreshCw } from "lucide-react";
+import { AlertTriangle, MapPin, Truck, RefreshCw, PackageCheck } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton"; // Componente para mostrar um placeholder de carregamento.
 import { ScrollArea } from "@/components/ui/scroll-area"; // Componente para adicionar uma barra de rolagem.
 import Image from 'next/image';
@@ -74,7 +73,7 @@ export default function PendingTab() {
             <div className="md:col-span-1 flex flex-col">
                 <Skeleton className="h-[500px] w-full" />
             </div>
-            <div className="md:col-span-2">
+            <div className="md:col-span-2 hidden md:block">
                 <Skeleton className="h-[500px] w-full" />
             </div>
         </div>
@@ -84,13 +83,13 @@ export default function PendingTab() {
   // Se ocorreu um erro ao buscar os dados, exibe um cartão de alerta com a mensagem de erro.
   if (error) {
     return (
-        <Card className="border-destructive/50">
-            <CardHeader className="flex flex-row items-center gap-3">
-                <AlertTriangle className="w-6 h-6 text-destructive" />
+        <Card className="border-destructive/50 bg-destructive/10">
+            <CardHeader className="flex flex-row items-center gap-3 space-y-0 pb-2">
+                <AlertTriangle className="w-8 h-8 text-destructive" />
                 <CardTitle className="text-destructive">Erro de Conexão</CardTitle>
             </CardHeader>
             <CardContent>
-                <p className="text-destructive">{error}</p>
+                <p className="text-destructive/90">{error}</p>
                 <p className="text-muted-foreground text-sm mt-2">
                     Não foi possível carregar os dados das entregas. Verifique a API ou tente novamente.
                 </p>
@@ -112,22 +111,25 @@ export default function PendingTab() {
             <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                     <Truck className="w-6 h-6 text-primary" />
-                    Entregas Pendentes do Dia
+                    Entregas Pendentes
                 </CardTitle>
             </CardHeader>
             <CardContent className="flex-1 overflow-hidden p-0">
                 {routes.length > 0 ? (
                 // Se houver rotas, exibe uma lista com barra de rolagem.
-                <ScrollArea className="h-[400px]">
+                <ScrollArea className="h-[calc(100vh-22rem)] md:h-[400px]">
                     <ul className="space-y-0">
                     {routes.map((route, index) => (
                         // Cada item da lista é clicável e atualiza a rota selecionada.
-                        <li key={route.id} onClick={() => setSelectedRoute(route)} className={`cursor-pointer p-4 hover:bg-muted/50 ${selectedRoute?.id === route.id ? 'bg-muted' : ''}`}>
+                        <li key={route.id} onClick={() => setSelectedRoute(route)} className={`cursor-pointer p-4 hover:bg-muted/50 transition-colors ${selectedRoute?.id === route.id ? 'bg-muted' : ''}`}>
                             <div className="flex gap-4 items-start">
                                 <div className="flex-1">
                                 <p className="font-semibold">{route.title}</p>
-                                <p className="text-sm text-muted-foreground truncate">{route.address}</p>
-                                <p className="text-xs text-muted-foreground/80 mt-1">{route.time}</p>
+                                <p className="text-sm text-muted-foreground truncate">{route.description}</p>
+                                <div className="flex items-center justify-between mt-2">
+                                    <Badge variant={route.status === 'pendente' ? 'secondary' : 'success'}>{route.status}</Badge>
+                                    <p className="text-xs text-muted-foreground/80">{route.time}</p>
+                                </div>
                                 </div>
                                 <MapPin className="w-5 h-5 text-muted-foreground flex-shrink-0 mt-1" />
                             </div>
@@ -139,10 +141,11 @@ export default function PendingTab() {
                 </ScrollArea>
                 ) : (
                 // Se não houver rotas, exibe uma mensagem amigável.
-                <div className="p-4 text-center text-muted-foreground h-[400px] flex flex-col items-center justify-center gap-4">
-                    <p className="font-medium">Nenhuma entrega pendente no momento!</p>
+                <div className="p-6 text-center text-muted-foreground h-full min-h-[300px] flex flex-col items-center justify-center gap-4 border-dashed border-2 rounded-lg m-4">
+                    <PackageCheck className="w-12 h-12 text-green-500" />
+                    <p className="font-medium text-lg">Nenhuma entrega pendente!</p>
                     <p className="text-sm">Você está em dia. Bom trabalho!</p>
-                    <Button variant="outline" onClick={fetchRoutes}>
+                    <Button variant="outline" onClick={fetchRoutes} className="mt-4">
                         <RefreshCw className="w-4 h-4 mr-2" />
                         Verificar novamente
                     </Button>
@@ -154,30 +157,37 @@ export default function PendingTab() {
       
       {/* Coluna da direita: detalhes da rota selecionada. */}
       <div className="md:col-span-2">
-        {selectedRoute ? (
+        {selectedRoute && (
             // Se uma rota estiver selecionada, exibe seus detalhes.
             <Card>
                 <CardHeader>
                     <CardTitle>{selectedRoute.title}</CardTitle>
-                    <CardContent className="p-0 pt-2">
-                        <p className="text-muted-foreground">{selectedRoute.description}</p>
-                    </CardContent>
+                    <CardDescription>{selectedRoute.description}</CardDescription>
                 </CardHeader>
                 <CardContent>
                 {/* Imagem de placeholder para o mapa. */}
-                <div className="aspect-video bg-muted rounded-lg flex items-center justify-center overflow-hidden">
-                    <Image src="https://picsum.photos/seed/map/400/225" width={400} height={225} alt="Map of next delivery" className="object-cover w-full h-full" data-ai-hint="city map" />
+                <div className="aspect-video bg-muted rounded-lg flex items-center justify-center overflow-hidden mb-4">
+                    <Image src="https://picsum.photos/seed/map/800/450" width={800} height={450} alt="Map of next delivery" className="object-cover w-full h-full" data-ai-hint="city map" />
                 </div>
                 {/* Informações detalhadas da rota. */}
-                <div className="mt-4 space-y-3">
-                    <p className="flex justify-between items-center text-sm"><strong>Horário Previsto:</strong> <span>{selectedRoute.time}</span></p>
-                    <p className="flex justify-between items-center text-sm"><strong>Endereço:</strong> <span>{selectedRoute.address}</span></p>
-                    <div className="flex justify-between items-center text-sm"><strong>Status:</strong> <Badge variant="success">{selectedRoute.status}</Badge></div>
+                <div className="space-y-4">
+                     <div className="flex items-center justify-between text-sm p-3 bg-muted/50 rounded-lg">
+                        <strong className="text-muted-foreground">Endereço:</strong>
+                        <span className="text-right font-medium">{selectedRoute.address}</span>
+                    </div>
+                     <div className="flex items-center justify-between text-sm p-3 bg-muted/50 rounded-lg">
+                        <strong className="text-muted-foreground">Horário Previsto:</strong>
+                        <span className="font-medium">{selectedRoute.time}</span>
+                    </div>
+                    <div className="flex items-center justify-between text-sm p-3 bg-muted/50 rounded-lg">
+                        <strong className="text-muted-foreground">Status:</strong>
+                        <Badge variant={selectedRoute.status === 'pendente' ? 'secondary' : 'success'}>{selectedRoute.status}</Badge>
+                    </div>
                 </div>
-                <Button className="w-full mt-6 bg-primary hover:bg-primary/90 text-primary-foreground">Iniciar Rota</Button>
+                <Button className="w-full mt-6 text-lg py-6 bg-primary hover:bg-primary/90 text-primary-foreground">Iniciar Rota</Button>
                 </CardContent>
             </Card>
-        ): null}
+        )}
       </div>
     </div>
   );
