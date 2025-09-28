@@ -23,9 +23,19 @@ export async function GET(request: Request) {
     // =======================================================================
     // PASSO 2: CONSULTA SQL PARA BUSCAR DADOS
     // =======================================================================
-    // A consulta foi atualizada para buscar mais detalhes das encomendas que estão com o status "pendente".
+    // A consulta foi atualizada para usar os nomes de coluna corretos da tb_encomenda
+    // e fazer um JOIN com tb_endereco para obter a descrição do endereço.
     const [rows] = await connection.execute(
-      'SELECT id_encomenda, nm_encomenda, ds_encomenda, ds_endereco, nm_status_encomenda, created_at FROM tb_encomenda WHERE nm_status_encomenda = "pendente"'
+      `SELECT 
+        e.id_encomenda, 
+        e.nr_encomenda, 
+        e.nm_cliente, 
+        CONCAT(en.ds_logradouro, ', ', en.nr_logradouro, ' - ', en.nm_bairro, ', ', en.nm_cidade, ' - ', en.nm_uf) as ds_endereco,
+        e.nm_status_encomenda, 
+        e.created_at 
+       FROM tb_encomenda e
+       LEFT JOIN tb_endereco en ON e.cd_endereco = en.id_endereco
+       WHERE e.nm_status_encomenda = 'pendente'`
     );
 
     // =======================================================================
@@ -35,9 +45,9 @@ export async function GET(request: Request) {
     // Isso desacopla a estrutura do banco de dados da estrutura da UI.
     const routes = (rows as any[]).map(row => ({
       id: row.id_encomenda,
-      title: row.nm_encomenda,
-      description: row.ds_encomenda,
-      address: row.ds_endereco,
+      title: `Encomenda #${row.nr_encomenda}`, // Usa o número da encomenda como título.
+      description: `Cliente: ${row.nm_cliente}`, // Usa o nome do cliente na descrição.
+      address: row.ds_endereco || 'Endereço não disponível', // Endereço obtido do JOIN.
       status: row.nm_status_encomenda,
       // Formata a data de criação para exibir apenas a hora e o minuto no formato brasileiro.
       time: new Date(row.created_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
@@ -62,6 +72,8 @@ export async function GET(request: Request) {
       errorMessage = `Acesso negado para o usuário '${process.env.DB_USER}'. Verifique as credenciais do banco de dados.`;
     } else if (error.code === 'ER_BAD_DB_ERROR') {
       errorMessage = `Banco de dados '${process.env.DB_DATABASE}' não encontrado.`;
+    } else if (error.code === 'ER_BAD_FIELD_ERROR') {
+      errorMessage = `Uma coluna na consulta não foi encontrada no banco de dados. Verifique a consulta SQL na API de rotas. Detalhes: ${error.message}`;
     }
 
     // Retorna uma resposta de erro com a mensagem apropriada e status 500.

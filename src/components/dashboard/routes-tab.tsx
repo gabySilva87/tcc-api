@@ -117,7 +117,7 @@ export default function RoutesTab() {
                             <div className="flex gap-4 items-start">
                                 <div className="flex-1">
                                 <p className="font-semibold">{route.title}</p>
-                                <p className="text-sm text-muted-foreground">{route.address}</p>
+                                <p className="text-sm text-muted-foreground truncate">{route.address}</p>
                                 <p className="text-xs text-muted-foreground/80 mt-1">{route.time}</p>
                                 </div>
                                 <MapPin className="w-5 h-5 text-muted-foreground flex-shrink-0 mt-1" />
