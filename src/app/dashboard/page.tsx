@@ -108,7 +108,7 @@ export default function DashboardPage() {
             <div className="flex items-center gap-3">
                <button onClick={() => setActiveTab('profile')} className="rounded-full focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2">
                 <Avatar>
-                  <AvatarImage src="https://picsum.photos/seed/driver/100/100" alt="Motorista" data-ai-hint="driver portrait" />
+                  <AvatarImage src="https://picsum.photos/seed/123/100/100" alt="Motorista" data-ai-hint="driver portrait" />
                   <AvatarFallback>{driverName ? driverName.charAt(0) : 'M'}</AvatarFallback>
                 </Avatar>
                </button>

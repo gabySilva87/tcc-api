@@ -1,4 +1,3 @@
-
 'use client'
 
 // Importa os componentes de UI da biblioteca ShadCN.
@@ -34,7 +33,7 @@ export default function ProfileTab({ driverName, onBack }: ProfileTabProps) {
                     {/* Contêiner para o avatar, com uma borda colorida. */}
                     <div className="flex justify-center mb-4">
                         <Avatar className="w-24 h-24 border-4 border-primary">
-                            <AvatarImage src="https://picsum.photos/seed/driver/100/100" alt="Motorista" data-ai-hint="driver portrait" />
+                            <AvatarImage src="https://picsum.photos/seed/123/100/100" alt="Motorista" data-ai-hint="driver portrait" />
                             {/* O `Fallback` mostra a inicial do nome se a imagem não carregar. */}
                             <AvatarFallback className="text-4xl">{driverInitial}</AvatarFallback>
                         </Avatar>
