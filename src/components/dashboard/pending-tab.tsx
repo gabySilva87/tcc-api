@@ -33,11 +33,20 @@ export default function PendingTab() {
 
   // `useCallback` para memorizar a função de busca e evitar recriações desnecessárias.
   const fetchRoutes = useCallback(async () => {
+    // Busca o ID do motorista do sessionStorage.
+    const driverId = sessionStorage.getItem('driverId');
+    // Se não houver ID, não faz a busca e exibe um erro.
+    if (!driverId) {
+      setError('ID do motorista não encontrado. Faça o login novamente.');
+      setLoading(false);
+      return;
+    }
+
     setLoading(true);
     setError(null);
     try {
-      // Faz a chamada `fetch` para a nossa API interna de rotas.
-      const response = await fetch('/api/routes');
+      // Faz a chamada `fetch` para a nossa API de rotas, passando o driverId como parâmetro.
+      const response = await fetch(`/api/routes?driverId=${driverId}`);
       const data = await response.json();
       
       // Se a resposta da API não foi bem-sucedida (ex: erro no servidor)...
@@ -69,11 +78,11 @@ export default function PendingTab() {
   // Se os dados ainda estão sendo carregados, exibe um esqueleto de UI.
   if (loading) {
     return (
-        <div className="grid gap-8 md:grid-cols-3">
-            <div className="md:col-span-1 flex flex-col">
+        <div className="grid gap-8 md:grid-cols-1 lg:grid-cols-3">
+            <div className="lg:col-span-1 flex flex-col">
                 <Skeleton className="h-[500px] w-full" />
             </div>
-            <div className="md:col-span-2 hidden md:block">
+            <div className="lg:col-span-2 hidden md:block">
                 <Skeleton className="h-[500px] w-full" />
             </div>
         </div>

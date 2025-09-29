@@ -1,17 +1,74 @@
-
-import { NextResponse } from 'next/server';
+import { NextResponse, NextRequest } from 'next/server';
 import mysql from 'mysql2/promise';
 import { decrypt } from '@/lib/crypto';
+import { headers } from 'next/headers';
 
-// A função GET é uma API Route que é acionada quando o frontend faz uma requisição
-// do tipo GET para `/api/routes`.
-export async function GET(request: Request) {
+// Interface de resposta de CEP
+interface CepApiResponse {
+  success: boolean;
+  data?: {
+    logradouro: string;
+    bairro: string;
+    localidade: string;
+    uf: string;
+  };
+  message?: string;
+}
+
+/**
+ * Tenta buscar detalhes do endereço primeiro na API interna,
+ * e caso falhe, usa o ViaCEP como fallback.
+ */
+async function getAddressFromCep(cep: string): Promise<CepApiResponse['data'] | null> {
+  try {
+    // API interna
+    const host = headers().get('host');
+    const protocol = process.env.NODE_ENV === 'development' ? 'http' : 'https';
+    const baseUrl = `${protocol}://${host}`;
+
+    const response = await fetch(`${baseUrl}/api/cep/${cep}`);
+    const result: CepApiResponse = await response.json();
+
+    if (result.success && result.data) {
+      return result.data;
+    }
+    console.warn(`[API interna] CEP não encontrado: ${cep}`);
+  } catch (error) {
+    console.error(`[API interna] Falha ao buscar CEP ${cep}:`, error);
+  }
+
+  // Fallback para ViaCEP
+  try {
+    const response = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
+    const result = await response.json();
+
+    if (!result.erro) {
+      return {
+        logradouro: result.logradouro || '',
+        bairro: result.bairro || '',
+        localidade: result.localidade || '',
+        uf: result.uf || '',
+      };
+    }
+    console.warn(`[ViaCEP] CEP não encontrado: ${cep}`);
+  } catch (error) {
+    console.error(`[ViaCEP] Falha ao buscar CEP ${cep}:`, error);
+  }
+
+  return null;
+}
+
+// Rota GET
+export async function GET(request: NextRequest) {
+  const { searchParams } = new URL(request.url);
+  const driverId = searchParams.get('driverId');
+
+  if (!driverId) {
+    return NextResponse.json({ message: 'O ID do motorista é obrigatório.' }, { status: 400 });
+  }
+
   let connection;
   try {
-    // =======================================================================
-    // PASSO 1: CONEXÃO COM O BANCO DE DADOS MYSQL
-    // =======================================================================
-    // Estabelece a conexão com o banco de dados usando as variáveis de ambiente.
     connection = await mysql.createConnection({
       host: process.env.DB_HOST,
       port: Number(process.env.DB_PORT),
@@ -21,63 +78,98 @@ export async function GET(request: Request) {
       ssl: process.env.DB_SSL === 'true' ? { rejectUnauthorized: true } : undefined,
     });
 
-    // =======================================================================
-    // PASSO 2: CONSULTA SQL PARA BUSCAR DADOS
-    // =======================================================================
-    // A consulta junta tb_encomenda com tb_endereco para obter os detalhes completos.
     const [rows] = await connection.execute(
       `SELECT 
         e.id_encomenda,
         e.nr_encomenda, 
         e.nm_cliente, 
-        e.created_at,
+        r.dt_entrega,
         end.nr_cep,
         end.nr_casa,
         end.ds_complemento
-       FROM tb_encomenda as e
-       LEFT JOIN tb_endereco as end ON e.cd_endereco = end.id_endereco`
+       FROM tb_roteiro_entrega AS r
+       JOIN tb_encomenda AS e ON r.id_encomenda = e.id_encomenda
+       LEFT JOIN tb_endereco AS end ON e.id_endereco = end.id_endereco
+       WHERE r.id_motorista = ?`,
+      [driverId]
     );
 
-    // =======================================================================
-    // PASSO 3: MAPEAMENTO E DESCRIPTOGRAFIA DOS DADOS
-    // =======================================================================
-    const routes = (rows as any[]).map(row => {
+    const routesPromises = (rows as any[]).map(async (row) => {
+      let decryptedCep: string | null = null;
+      let decryptedNumero = '';
+      let decryptedComplemento = '';
+
       try {
-        const cep = row.nr_cep ? `CEP: ${decrypt(row.nr_cep)}` : '';
-        const numero = row.nr_casa ? `Nº ${decrypt(row.nr_casa)}` : '';
-        const complemento = row.ds_complemento ? decrypt(row.ds_complemento) : '';
-
-        // Formata o endereço completo de forma mais legível com as colunas existentes.
-        const fullAddress = [cep, numero, complemento].filter(Boolean).join(', ');
-
-        return {
-          id: row.id_encomenda,
-          title: `Encomenda #${row.nr_encomenda}`,
-          description: `Cliente: ${row.nm_cliente}`,
-          address: fullAddress || 'Endereço indisponível',
-          status: 'pendente', // Status definido estaticamente para manter a UI.
-          time: new Date(row.created_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
-          read: false
-        };
-      } catch (e) {
-        console.error(`Falha ao descriptografar dados para a encomenda #${row.nr_encomenda}:`, e);
-        return {
-          id: row.id_encomenda,
-          title: `Encomenda #${row.nr_encomenda}`,
-          description: `Cliente: ${row.nm_cliente}`,
-          address: 'Erro ao processar endereço',
-          status: 'pendente',
-          time: 'N/A',
-          read: false
-        };
+        if (row.nr_cep) decryptedCep = decrypt(row.nr_cep);
+      } catch {
+        console.error(`Falha ao descriptografar CEP da encomenda ${row.nr_encomenda}`);
       }
-    });
-    
-    // =======================================================================
-    // PASSO 4: RETORNAR OS DADOS FORMATADOS
-    // =======================================================================
-    return NextResponse.json(routes);
 
+      try {
+        if (row.nr_casa) decryptedNumero = decrypt(row.nr_casa);
+      } catch {
+        console.error(`Falha ao descriptografar número da encomenda ${row.nr_encomenda}`);
+      }
+
+      try {
+        if (row.ds_complemento) decryptedComplemento = decrypt(row.ds_complemento);
+      } catch {
+        console.error(`Falha ao descriptografar complemento da encomenda ${row.nr_encomenda}`);
+      }
+
+      let addressDetails = null;
+      if (decryptedCep) {
+        addressDetails = await getAddressFromCep(decryptedCep);
+      }
+
+      // Monta o endereço final com o que estiver disponível
+      const addressParts: string[] = [];
+      if (addressDetails) {
+        if (addressDetails.logradouro) addressParts.push(addressDetails.logradouro);
+        if (decryptedNumero) addressParts.push(`Nº ${decryptedNumero}`);
+        if (decryptedComplemento) addressParts.push(decryptedComplemento);
+        if (addressDetails.bairro) addressParts.push(addressDetails.bairro);
+        if (addressDetails.localidade && addressDetails.uf) {
+          addressParts.push(`${addressDetails.localidade} - ${addressDetails.uf}`);
+        }
+      } else {
+        if (decryptedCep) addressParts.push(`CEP: ${decryptedCep}`);
+        if (decryptedNumero) addressParts.push(`Nº ${decryptedNumero}`);
+        if (decryptedComplemento) addressParts.push(decryptedComplemento);
+      }
+
+      const fullAddress = addressParts.length > 0 ? addressParts.join(', ') : 'Endereço indisponível';
+
+      // Formatação da data de entrega
+      let formattedTime = 'N/A';
+      if (row.dt_entrega) {
+        const deliveryDate = new Date(row.dt_entrega);
+        if (!isNaN(deliveryDate.getTime())) {
+          formattedTime = deliveryDate
+            .toLocaleDateString('pt-BR', {
+              day: '2-digit',
+              month: '2-digit',
+              year: 'numeric',
+              hour: '2-digit',
+              minute: '2-digit',
+            })
+            .replace(',', '');
+        }
+      }
+
+      return {
+        id: row.id_encomenda,
+        title: `Encomenda #${row.nr_encomenda}`,
+        description: `Cliente: ${row.nm_cliente}`,
+        address: fullAddress,
+        status: 'pendente',
+        time: formattedTime,
+        read: false,
+      };
+    });
+
+    const routes = await Promise.all(routesPromises);
+    return NextResponse.json(routes);
   } catch (error: any) {
     console.error('[ERRO NA API DE ROTAS]:', error);
 
@@ -92,14 +184,8 @@ export async function GET(request: Request) {
       errorMessage = `Coluna não encontrada. Verifique a consulta SQL. Detalhes: ${error.message}`;
     }
 
-    return NextResponse.json(
-      { message: errorMessage },
-      { status: 500 }
-    );
+    return NextResponse.json({ message: errorMessage }, { status: 500 });
   } finally {
-    // =======================================================================
-    // PASSO 5: FECHAR A CONEXÃO
-    // =======================================================================
     if (connection) {
       await connection.end();
     }

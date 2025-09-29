@@ -26,6 +26,7 @@ const initialState = {
   message: null,        // Armazena mensagens de sucesso ou erro globais.
   errors: {},           // Armazena erros de validação específicos de cada campo.
   driverName: null,     // Armazena o nome do motorista após o login bem-sucedido.
+  driverId: null,       // Armazena o ID do motorista.
 };
 
 // Componente para o botão de envio do formulário. Ele é separado para poder
@@ -64,16 +65,17 @@ export function LoginForm() {
   // `useEffect` é usado para executar "efeitos colaterais" sempre que os valores em seu array de dependências mudam.
   // Neste caso, ele observa o `state` retornado pela Server Action para reagir a mudanças.
   useEffect(() => {
-    // Se a action retornou sucesso e o nome do motorista...
-    if (state?.success && state?.driverName) {
+    // Se a action retornou sucesso, o nome e o ID do motorista...
+    if (state?.success && state?.driverName && state?.driverId) {
       // Exibe uma notificação de sucesso.
       toast({
         title: 'Sucesso!',
         description: state.message,
       });
-      // Salva o nome do motorista no `sessionStorage` para ser usado em outras páginas (como o dashboard).
+      // Salva o nome e o ID do motorista no `sessionStorage` para serem usados em outras páginas.
       // `sessionStorage` persiste dados apenas enquanto a aba do navegador está aberta.
       sessionStorage.setItem('driverName', state.driverName);
+      sessionStorage.setItem('driverId', String(state.driverId)); // Salva o ID
       
       // Aguarda 500ms para o usuário ver o toast antes de redirecionar para a dashboard.
       setTimeout(() => {
@@ -114,8 +116,8 @@ export function LoginForm() {
             />
           </div>
           <div className="flex flex-col pt-2">
-            <CardTitle className="text-2xl md:text-4xl font-bold tracking-wider text-foreground">LogiDesk</CardTitle>
-            <p className="text-base md:text-lg text-primary font-semibold">Motorista</p>
+            <CardTitle className="text-3xl md:text-4xl font-bold tracking-wider text-foreground">LogiDesk</CardTitle>
+            <p className="text-md md:text-lg text-primary font-semibold">Motorista</p>
           </div>
         </CardHeader>
 
@@ -126,7 +128,7 @@ export function LoginForm() {
             {/* O `<Label>` melhora a acessibilidade, associando o texto ao campo de input. */}
             <Label htmlFor="usuario" className="text-foreground">Usuário</Label>
             {/* Campo de entrada de texto para o nome de usuário. */}
-            <Input id="usuario" type="text" name="usuario" placeholder="Digite seu usuário" required aria-describedby='usuario-error' className="bg-white text-black placeholder:text-gray-500 rounded-full px-5 py-3" />
+            <Input id="usuario" type="text" name="usuario" placeholder="Digite seu usuário" required aria-describedby='usuario-error' className="bg-white text-black placeholder:text-gray-500 rounded-full px-5 py-3 h-12" />
             {/* Contêiner para a mensagem de erro de validação do campo "usuário".
                 `aria-live="polite"` informa aos leitores de tela para anunciar a mensagem quando ela aparecer. */}
             <div id="usuario-error" aria-live="polite" aria-atomic="true">
@@ -137,7 +139,7 @@ export function LoginForm() {
           <div className="grid gap-2">
             <Label htmlFor="senha" className="text-foreground">Senha</Label>
             {/* Campo de entrada de senha. `type="password"` mascara o texto digitado. */}
-            <Input id="senha" type="password" name="senha" placeholder="Digite sua senha" required aria-describedby='senha-error' className="bg-white text-black placeholder:text-gray-500 rounded-full px-5 py-3"/>
+            <Input id="senha" type="password" name="senha" placeholder="Digite sua senha" required aria-describedby='senha-error' className="bg-white text-black placeholder:text-gray-500 rounded-full px-5 py-3 h-12"/>
             {/* Contêiner para a mensagem de erro de validação do campo "senha". */}
             <div id="senha-error" aria-live="polite" aria-atomic="true">
              {state?.errors?.senha && <p className="text-sm font-medium text-destructive">{state.errors.senha[0]}</p>}
