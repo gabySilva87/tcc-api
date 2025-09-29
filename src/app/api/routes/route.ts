@@ -40,7 +40,7 @@ export async function GET(request: NextRequest) {
         e.id_encomenda,
         e.nr_encomenda, 
         e.nm_cliente, 
-        e.created_at,
+        r.dt_entrega,
         end.nr_cep,
         end.nr_casa,
         end.ds_complemento
@@ -63,17 +63,24 @@ export async function GET(request: NextRequest) {
         // Formata o endereço completo de forma mais legível com as colunas existentes.
         const fullAddress = [cep, numero, complemento].filter(Boolean).join(', ');
 
+        const deliveryDate = new Date(row.dt_entrega);
+        const formattedTime = deliveryDate.toLocaleDateString('pt-BR', {
+            day: '2-digit', month: '2-digit', year: 'numeric',
+            hour: '2-digit', minute: '2-digit'
+        }).replace(',', '');
+
+
         return {
           id: row.id_encomenda,
           title: `Encomenda #${row.nr_encomenda}`,
           description: `Cliente: ${row.nm_cliente}`,
           address: fullAddress || 'Endereço indisponível',
           status: 'pendente', // Status definido estaticamente para manter a UI.
-          time: new Date(row.created_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
+          time: row.dt_entrega ? formattedTime : 'Não definido',
           read: false
         };
       } catch (e) {
-        console.error(`Falha ao descriptografar dados para a encomenda #${row.nr_encomenda}:`, e);
+        console.error(`Falha ao processar dados para a encomenda #${row.nr_encomenda}:`, e);
         return {
           id: row.id_encomenda,
           title: `Encomenda #${row.nr_encomenda}`,
