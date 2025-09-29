@@ -2,6 +2,45 @@
 import { NextResponse, NextRequest } from 'next/server';
 import mysql from 'mysql2/promise';
 import { decrypt } from '@/lib/crypto';
+import { headers } from 'next/headers';
+
+// Interface para a resposta da nossa API de CEP interna
+interface CepApiResponse {
+  success: boolean;
+  data?: {
+    logradouro: string;
+    bairro: string;
+    localidade: string;
+    uf: string;
+  };
+  message?: string;
+}
+
+/**
+ * Função auxiliar para buscar detalhes do endereço a partir de um CEP.
+ * @param cep - O CEP a ser consultado (já descriptografado).
+ * @returns Os dados do endereço ou null em caso de erro.
+ */
+async function getAddressFromCep(cep: string): Promise<CepApiResponse['data'] | null> {
+  try {
+    // Constrói a URL para a nossa API de CEP interna
+    const host = headers().get('host');
+    const protocol = process.env.NODE_ENV === 'development' ? 'http' : 'https';
+    const baseUrl = `${protocol}://${host}`;
+    
+    const response = await fetch(`${baseUrl}/api/cep/${cep}`);
+    const result: CepApiResponse = await response.json();
+
+    if (result.success && result.data) {
+      return result.data;
+    }
+    return null;
+  } catch (error) {
+    console.error(`Falha ao buscar CEP ${cep}:`, error);
+    return null;
+  }
+}
+
 
 // A função GET é uma API Route que é acionada quando o frontend faz uma requisição
 // do tipo GET para `/api/routes`.
@@ -20,7 +59,6 @@ export async function GET(request: NextRequest) {
     // =======================================================================
     // PASSO 1: CONEXÃO COM O BANCO DE DADOS MYSQL
     // =======================================================================
-    // Estabelece a conexão com o banco de dados usando as variáveis de ambiente.
     connection = await mysql.createConnection({
       host: process.env.DB_HOST,
       port: Number(process.env.DB_PORT),
@@ -33,8 +71,6 @@ export async function GET(request: NextRequest) {
     // =======================================================================
     // PASSO 2: CONSULTA SQL PARA BUSCAR DADOS
     // =======================================================================
-    // A consulta agora usa `tb_roteiro_entrega` como ponto de partida para encontrar
-    // as encomendas associadas a um motorista.
     const [rows] = await connection.execute(
       `SELECT 
         e.id_encomenda,
@@ -48,27 +84,48 @@ export async function GET(request: NextRequest) {
        JOIN tb_encomenda AS e ON r.id_encomenda = e.id_encomenda
        LEFT JOIN tb_endereco AS end ON e.cd_endereco = end.id_endereco
        WHERE r.id_motorista = ?`,
-       [driverId] // Passa o ID do motorista como parâmetro para evitar SQL Injection.
+       [driverId]
     );
 
     // =======================================================================
     // PASSO 3: MAPEAMENTO E DESCRIPTOGRAFIA DOS DADOS
     // =======================================================================
-    const routes = (rows as any[]).map(row => {
+    const routesPromises = (rows as any[]).map(async (row) => {
       try {
-        // Descriptografa os campos apenas se eles existirem.
-        const cep = row.nr_cep ? `CEP: ${decrypt(row.nr_cep)}` : '';
-        const numero = row.nr_casa ? `Nº ${decrypt(row.nr_casa)}` : '';
-        const complemento = row.ds_complemento ? decrypt(row.ds_complemento) : '';
+        const decryptedCep = row.nr_cep ? decrypt(row.nr_cep) : null;
+        const decryptedNumero = row.nr_casa ? decrypt(row.nr_casa) : '';
+        const decryptedComplemento = row.ds_complemento ? decrypt(row.ds_complemento) : '';
+        
+        let addressDetails = null;
+        if (decryptedCep) {
+          addressDetails = await getAddressFromCep(decryptedCep);
+        }
 
-        // Formata o endereço completo de forma mais legível.
-        const fullAddress = [cep, numero, complemento].filter(Boolean).join(', ');
+        let fullAddress = 'Endereço indisponível';
+        if (addressDetails) {
+            // Constrói o endereço completo com os dados da API ViaCEP
+            const addressParts = [
+                addressDetails.logradouro, // Rua
+                decryptedNumero ? `Nº ${decryptedNumero}` : null,
+                decryptedComplemento,
+                addressDetails.bairro,
+                `${addressDetails.localidade} - ${addressDetails.uf}`
+            ];
+            fullAddress = addressParts.filter(Boolean).join(', ');
+        } else if (decryptedCep) {
+            // Fallback se a API de CEP falhar: mostra o que temos
+            const addressParts = [
+                `CEP: ${decryptedCep}`,
+                decryptedNumero ? `Nº ${decryptedNumero}` : null,
+                decryptedComplemento,
+            ];
+            fullAddress = addressParts.filter(Boolean).join(', ');
+        }
 
         // Formata a data de entrega
         let formattedTime = 'Não definido';
         if (row.dt_entrega) {
           const deliveryDate = new Date(row.dt_entrega);
-          // Verifica se a data é válida
           if (!isNaN(deliveryDate.getTime())) {
             formattedTime = deliveryDate.toLocaleDateString('pt-BR', {
                 day: '2-digit', month: '2-digit', year: 'numeric',
@@ -81,14 +138,13 @@ export async function GET(request: NextRequest) {
           id: row.id_encomenda,
           title: `Encomenda #${row.nr_encomenda}`,
           description: `Cliente: ${row.nm_cliente}`,
-          address: fullAddress || 'Endereço indisponível',
-          status: 'pendente', // Status definido estaticamente para manter a UI.
+          address: fullAddress,
+          status: 'pendente',
           time: formattedTime,
           read: false
         };
       } catch (e) {
         console.error(`Falha ao processar dados para a encomenda #${row.nr_encomenda}:`, e);
-        // Retorna um objeto de erro se a descriptografia falhar, para depuração.
         return {
           id: row.id_encomenda,
           title: `Encomenda #${row.nr_encomenda}`,
@@ -100,6 +156,9 @@ export async function GET(request: NextRequest) {
         };
       }
     });
+
+    // Aguarda todas as promessas serem resolvidas
+    const routes = await Promise.all(routesPromises);
     
     // =======================================================================
     // PASSO 4: RETORNAR OS DADOS FORMATADOS
