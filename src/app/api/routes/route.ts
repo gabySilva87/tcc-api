@@ -107,7 +107,7 @@ export async function GET(request: NextRequest) {
       }
 
       // Montagem segura do endereço final
-      let fullAddress = 'Endereço indisponível';
+      let fullAddress = 'Erro ao processar endereço';
       if (addressDetails) {
           const addressParts = [
               addressDetails.logradouro,
@@ -124,10 +124,12 @@ export async function GET(request: NextRequest) {
               decryptedComplemento,
           ];
           fullAddress = addressParts.filter(Boolean).join(', ');
+      } else if (decryptedNumero) {
+          fullAddress = `Nº ${decryptedNumero}, ${decryptedComplemento || ''}`.replace(/, $/, '');
       }
       
       // Formatação de data segura
-      let formattedTime = 'Não definido';
+      let formattedTime = 'N/A';
       if (row.dt_entrega) {
         const deliveryDate = new Date(row.dt_entrega);
         if (!isNaN(deliveryDate.getTime())) { // Verifica se a data é válida
