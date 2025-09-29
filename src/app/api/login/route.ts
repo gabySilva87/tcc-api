@@ -38,7 +38,7 @@ export async function POST(request: Request) {
     // Busca o usuário, sua senha criptografada (HASHED) e o nome do motorista na tabela de motoristas.
     // Usar `?` como placeholder previne ataques de SQL Injection.
     const [rows] = await connection.execute(
-      'SELECT nm_usuario, nr_senha, nm_motorista FROM tb_motorista WHERE nm_usuario = ?',
+      'SELECT id_motorista, nm_usuario, nr_senha, nm_motorista FROM tb_motorista WHERE nm_usuario = ?',
       [usuario]
     );
 
@@ -63,8 +63,13 @@ export async function POST(request: Request) {
       }
       
       if(senhaCorreta){
-        // Se a senha estiver correta, retorna uma resposta de sucesso com o nome do motorista.
-        return NextResponse.json({ success: true, message: 'Login bem-sucedido!', driverName: driver.nm_motorista });
+        // Se a senha estiver correta, retorna uma resposta de sucesso com o nome e o ID do motorista.
+        return NextResponse.json({ 
+            success: true, 
+            message: 'Login bem-sucedido!', 
+            driverName: driver.nm_motorista,
+            driverId: driver.id_motorista 
+        });
       }
       else{
         // Se a senha estiver incorreta, retorna um erro de credenciais inválidas.

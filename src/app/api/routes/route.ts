@@ -1,11 +1,20 @@
 
-import { NextResponse } from 'next/server';
+import { NextResponse, NextRequest } from 'next/server';
 import mysql from 'mysql2/promise';
 import { decrypt } from '@/lib/crypto';
 
 // A função GET é uma API Route que é acionada quando o frontend faz uma requisição
 // do tipo GET para `/api/routes`.
-export async function GET(request: Request) {
+export async function GET(request: NextRequest) {
+  // Extrai os parâmetros da URL, especificamente o `driverId`.
+  const { searchParams } = new URL(request.url);
+  const driverId = searchParams.get('driverId');
+  
+  // Se o `driverId` não for fornecido, retorna um erro, pois é necessário para filtrar as encomendas.
+  if (!driverId) {
+    return NextResponse.json({ message: 'O ID do motorista é obrigatório.' }, { status: 400 });
+  }
+
   let connection;
   try {
     // =======================================================================
@@ -24,7 +33,7 @@ export async function GET(request: Request) {
     // =======================================================================
     // PASSO 2: CONSULTA SQL PARA BUSCAR DADOS
     // =======================================================================
-    // A consulta junta tb_encomenda com tb_endereco para obter os detalhes completos.
+    // A consulta junta tb_encomenda com tb_endereco e filtra pelo id_motorista.
     const [rows] = await connection.execute(
       `SELECT 
         e.id_encomenda,
@@ -35,7 +44,9 @@ export async function GET(request: Request) {
         end.nr_casa,
         end.ds_complemento
        FROM tb_encomenda as e
-       LEFT JOIN tb_endereco as end ON e.cd_endereco = end.id_endereco`
+       LEFT JOIN tb_endereco as end ON e.cd_endereco = end.id_endereco
+       WHERE e.id_motorista = ?`,
+       [driverId] // Passa o ID do motorista como parâmetro para evitar SQL Injection.
     );
 
     // =======================================================================

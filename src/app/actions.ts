@@ -55,12 +55,13 @@ export async function login(prevState: any, formData: FormData) {
 
     // Se a resposta da API foi bem-sucedida (status 2xx)...
     if (response.ok) {
-        // Retorna um estado de sucesso, incluindo a mensagem e o nome do motorista
+        // Retorna um estado de sucesso, incluindo a mensagem, o nome e o ID do motorista
         // que vieram da API. O frontend usará esses dados.
         return {
             success: true,
             message: responseData.message,
             driverName: responseData.driverName,
+            driverId: responseData.driverId, 
             errors: {},
         }
     } else {

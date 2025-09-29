@@ -26,6 +26,7 @@ const initialState = {
   message: null,        // Armazena mensagens de sucesso ou erro globais.
   errors: {},           // Armazena erros de validação específicos de cada campo.
   driverName: null,     // Armazena o nome do motorista após o login bem-sucedido.
+  driverId: null,       // Armazena o ID do motorista.
 };
 
 // Componente para o botão de envio do formulário. Ele é separado para poder
@@ -64,16 +65,17 @@ export function LoginForm() {
   // `useEffect` é usado para executar "efeitos colaterais" sempre que os valores em seu array de dependências mudam.
   // Neste caso, ele observa o `state` retornado pela Server Action para reagir a mudanças.
   useEffect(() => {
-    // Se a action retornou sucesso e o nome do motorista...
-    if (state?.success && state?.driverName) {
+    // Se a action retornou sucesso, o nome e o ID do motorista...
+    if (state?.success && state?.driverName && state?.driverId) {
       // Exibe uma notificação de sucesso.
       toast({
         title: 'Sucesso!',
         description: state.message,
       });
-      // Salva o nome do motorista no `sessionStorage` para ser usado em outras páginas (como o dashboard).
+      // Salva o nome e o ID do motorista no `sessionStorage` para serem usados em outras páginas.
       // `sessionStorage` persiste dados apenas enquanto a aba do navegador está aberta.
       sessionStorage.setItem('driverName', state.driverName);
+      sessionStorage.setItem('driverId', String(state.driverId)); // Salva o ID
       
       // Aguarda 500ms para o usuário ver o toast antes de redirecionar para a dashboard.
       setTimeout(() => {
