@@ -92,12 +92,14 @@ export async function GET(request: NextRequest) {
     // =======================================================================
     const routesPromises = (rows as any[]).map(async (row) => {
       try {
+        // Descriptografa cada parte do endereço de forma independente e segura.
         const decryptedCep = row.nr_cep ? decrypt(row.nr_cep) : null;
         const decryptedNumero = row.nr_casa ? decrypt(row.nr_casa) : '';
         const decryptedComplemento = row.ds_complemento ? decrypt(row.ds_complemento) : '';
         
         let addressDetails = null;
         if (decryptedCep) {
+          // Busca os detalhes do endereço (rua, bairro, etc.) usando a API de CEP.
           addressDetails = await getAddressFromCep(decryptedCep);
         }
 
@@ -126,6 +128,7 @@ export async function GET(request: NextRequest) {
         let formattedTime = 'Não definido';
         if (row.dt_entrega) {
           const deliveryDate = new Date(row.dt_entrega);
+          // Verifica se a data é válida antes de formatar
           if (!isNaN(deliveryDate.getTime())) {
             formattedTime = deliveryDate.toLocaleDateString('pt-BR', {
                 day: '2-digit', month: '2-digit', year: 'numeric',
@@ -157,7 +160,7 @@ export async function GET(request: NextRequest) {
       }
     });
 
-    // Aguarda todas as promessas serem resolvidas
+    // Aguarda todas as promessas (buscas de CEP) serem resolvidas
     const routes = await Promise.all(routesPromises);
     
     // =======================================================================
