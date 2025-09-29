@@ -56,19 +56,26 @@ export async function GET(request: NextRequest) {
     // =======================================================================
     const routes = (rows as any[]).map(row => {
       try {
+        // Verifica se há dados antes de tentar descriptografar
         const cep = row.nr_cep ? `CEP: ${decrypt(row.nr_cep)}` : '';
         const numero = row.nr_casa ? `Nº ${decrypt(row.nr_casa)}` : '';
         const complemento = row.ds_complemento ? decrypt(row.ds_complemento) : '';
 
-        // Formata o endereço completo de forma mais legível com as colunas existentes.
+        // Formata o endereço completo de forma mais legível.
         const fullAddress = [cep, numero, complemento].filter(Boolean).join(', ');
 
-        const deliveryDate = new Date(row.dt_entrega);
-        const formattedTime = deliveryDate.toLocaleDateString('pt-BR', {
-            day: '2-digit', month: '2-digit', year: 'numeric',
-            hour: '2-digit', minute: '2-digit'
-        }).replace(',', '');
-
+        // Formata a data de entrega
+        let formattedTime = 'Não definido';
+        if (row.dt_entrega) {
+          const deliveryDate = new Date(row.dt_entrega);
+          // Verifica se a data é válida
+          if (!isNaN(deliveryDate.getTime())) {
+            formattedTime = deliveryDate.toLocaleDateString('pt-BR', {
+                day: '2-digit', month: '2-digit', year: 'numeric',
+                hour: '2-digit', minute: '2-digit'
+            }).replace(',', '');
+          }
+        }
 
         return {
           id: row.id_encomenda,
@@ -76,7 +83,7 @@ export async function GET(request: NextRequest) {
           description: `Cliente: ${row.nm_cliente}`,
           address: fullAddress || 'Endereço indisponível',
           status: 'pendente', // Status definido estaticamente para manter a UI.
-          time: row.dt_entrega ? formattedTime : 'Não definido',
+          time: formattedTime,
           read: false
         };
       } catch (e) {
