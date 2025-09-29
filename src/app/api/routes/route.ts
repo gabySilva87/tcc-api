@@ -82,7 +82,7 @@ export async function GET(request: NextRequest) {
         end.ds_complemento
        FROM tb_roteiro_entrega AS r
        JOIN tb_encomenda AS e ON r.id_encomenda = e.id_encomenda
-       LEFT JOIN tb_endereco AS end ON e.cd_endereco = end.id_endereco
+       LEFT JOIN tb_endereco AS end ON e.id_endereco = end.id_endereco
        WHERE r.id_motorista = ?`,
        [driverId]
     );
