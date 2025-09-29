@@ -107,26 +107,23 @@ export async function GET(request: NextRequest) {
       }
 
       // Montagem segura do endereço final
-      let fullAddress = 'Erro ao processar endereço';
+      const addressParts = [];
       if (addressDetails) {
-          const addressParts = [
-              addressDetails.logradouro,
-              decryptedNumero ? `Nº ${decryptedNumero}` : null,
-              decryptedComplemento,
-              addressDetails.bairro,
-              `${addressDetails.localidade} - ${addressDetails.uf}`
-          ];
-          fullAddress = addressParts.filter(Boolean).join(', ');
+        if (addressDetails.logradouro) addressParts.push(addressDetails.logradouro);
+        if (decryptedNumero) addressParts.push(`Nº ${decryptedNumero}`);
+        if (decryptedComplemento) addressParts.push(decryptedComplemento);
+        if (addressDetails.bairro) addressParts.push(addressDetails.bairro);
+        if (addressDetails.localidade && addressDetails.uf) addressParts.push(`${addressDetails.localidade} - ${addressDetails.uf}`);
       } else if (decryptedCep) {
-          const addressParts = [
-              `CEP: ${decryptedCep}`,
-              decryptedNumero ? `Nº ${decryptedNumero}` : null,
-              decryptedComplemento,
-          ];
-          fullAddress = addressParts.filter(Boolean).join(', ');
+        addressParts.push(`CEP: ${decryptedCep}`);
+        if (decryptedNumero) addressParts.push(`Nº ${decryptedNumero}`);
+        if (decryptedComplemento) addressParts.push(decryptedComplemento);
       } else if (decryptedNumero) {
-          fullAddress = `Nº ${decryptedNumero}, ${decryptedComplemento || ''}`.replace(/, $/, '');
+        addressParts.push(`Nº ${decryptedNumero}`);
+        if (decryptedComplemento) addressParts.push(decryptedComplemento);
       }
+
+      const fullAddress = addressParts.length > 0 ? addressParts.join(', ') : 'Endereço indisponível';
       
       // Formatação de data segura
       let formattedTime = 'N/A';
