@@ -56,7 +56,7 @@ export async function GET(request: NextRequest) {
     // =======================================================================
     const routes = (rows as any[]).map(row => {
       try {
-        // Verifica se há dados antes de tentar descriptografar
+        // Descriptografa os campos apenas se eles existirem.
         const cep = row.nr_cep ? `CEP: ${decrypt(row.nr_cep)}` : '';
         const numero = row.nr_casa ? `Nº ${decrypt(row.nr_casa)}` : '';
         const complemento = row.ds_complemento ? decrypt(row.ds_complemento) : '';
@@ -88,6 +88,7 @@ export async function GET(request: NextRequest) {
         };
       } catch (e) {
         console.error(`Falha ao processar dados para a encomenda #${row.nr_encomenda}:`, e);
+        // Retorna um objeto de erro se a descriptografia falhar, para depuração.
         return {
           id: row.id_encomenda,
           title: `Encomenda #${row.nr_encomenda}`,
