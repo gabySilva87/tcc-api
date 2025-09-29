@@ -33,7 +33,8 @@ export async function GET(request: NextRequest) {
     // =======================================================================
     // PASSO 2: CONSULTA SQL PARA BUSCAR DADOS
     // =======================================================================
-    // A consulta junta tb_encomenda com tb_endereco e filtra pelo id_motorista.
+    // A consulta agora usa `tb_roteiro_entrega` como ponto de partida para encontrar
+    // as encomendas associadas a um motorista.
     const [rows] = await connection.execute(
       `SELECT 
         e.id_encomenda,
@@ -43,9 +44,10 @@ export async function GET(request: NextRequest) {
         end.nr_cep,
         end.nr_casa,
         end.ds_complemento
-       FROM tb_encomenda as e
-       LEFT JOIN tb_endereco as end ON e.cd_endereco = end.id_endereco
-       WHERE e.id_motorista = ?`,
+       FROM tb_roteiro_entrega AS r
+       JOIN tb_encomenda AS e ON r.id_encomenda = e.id_encomenda
+       LEFT JOIN tb_endereco AS end ON e.cd_endereco = end.id_endereco
+       WHERE r.id_motorista = ?`,
        [driverId] // Passa o ID do motorista como parâmetro para evitar SQL Injection.
     );
 
