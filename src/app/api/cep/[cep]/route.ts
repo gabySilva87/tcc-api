@@ -17,10 +17,8 @@ interface ViaCepResponse {
 }
 
 /**
- * API Route para consultar um CEP usando a API externa ViaCEP.
- * @param _request - O objeto de requisição (não utilizado).
- * @param params - Os parâmetros da URL, contendo o CEP a ser consultado.
- * @returns Uma resposta JSON com os dados do endereço ou uma mensagem de erro.
+ * API Route para consultar um CEP.
+ * ATUALMENTE EM MODO DE TESTE: Retorna um endereço mocado.
  */
 export async function GET(
   _request: Request,
@@ -36,18 +34,35 @@ export async function GET(
     );
   }
 
+  // =======================================================================
+  // MODO DE TESTE: DADOS MOCADOS
+  // =======================================================================
+  const mockAddress = {
+      cep: cep,
+      logradouro: "Rua de Exemplo",
+      complemento: "Lado A",
+      bairro: "Bairro do Teste",
+      localidade: "Cidade Fictícia",
+      uf: "TS",
+      ibge: "9999999",
+      gia: "",
+      ddd: "99",
+      siafi: "9999"
+  };
+
+  return NextResponse.json({ success: true, data: mockAddress });
+
+  /*
+  // CÓDIGO ORIGINAL COM CHAMADA À API VIACEP (TEMPORARIAMENTE DESABILITADO)
   try {
-    // Faz a chamada fetch para a API ViaCEP.
     const response = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
     
-    // Se a resposta da API externa não for bem-sucedida, lança um erro.
     if (!response.ok) {
       throw new Error(`Falha na API ViaCEP com status: ${response.status}`);
     }
 
     const data: ViaCepResponse = await response.json();
 
-    // A API ViaCEP retorna um objeto com `erro: true` se o CEP não for encontrado.
     if (data.erro) {
       return NextResponse.json(
         { success: false, message: 'CEP não encontrado.' },
@@ -55,7 +70,6 @@ export async function GET(
       );
     }
     
-    // Retorna os dados do endereço com sucesso.
     return NextResponse.json({ success: true, data });
 
   } catch (error) {
@@ -65,4 +79,5 @@ export async function GET(
       { status: 500 }
     );
   }
+  */
 }
