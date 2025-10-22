@@ -18,7 +18,7 @@ export async function GET(request: NextRequest) {
   try {
     connection = await mysql.createConnection({
       host: process.env.DB_HOST,
-      port: Number(process.env.DB_PORT),
+      port: 3307, // FORÇANDO A PORTA CORRETA
       user: process.env.DB_USER,
       password: process.env.DB_PASSWORD,
       database: process.env.DB_DATABASE,
@@ -93,9 +93,9 @@ export async function GET(request: NextRequest) {
 
     let errorMessage = `Ocorreu um erro ao buscar os dados das rotas. Detalhes: ${error.message}`;
     if (error.code === 'ECONNREFUSED' || error.code === 'ENOTFOUND') {
-      errorMessage = `[LOG DETALHADO] Não foi possível conectar ao servidor de banco de dados em '${process.env.DB_HOST}:${process.env.DB_PORT}'. Verifique se o servidor MySQL está rodando. Erro original: ${error.message}`;
+      errorMessage = `[LOG DETALHADO] Não foi possível conectar ao servidor de banco de dados em '${process.env.DB_HOST}:${3307}'. Verifique se o servidor MySQL está rodando. Erro original: ${error.message}`;
     } else if (error.code === 'ER_ACCESS_DENIED_ERROR') {
-      errorMessage = `[LOG DETALHADO] Acesso negado para o usuário '${process.env.DB_USER}'. Verifique as credenciais do banco. Erro original: ${error.message}`;
+      errorMessage = `[LOG DETALhado] Acesso negado para o usuário '${process.env.DB_USER}'. Verifique as credenciais do banco. Erro original: ${error.message}`;
     } else if (error.code === 'ER_BAD_DB_ERROR') {
       errorMessage = `[LOG DETALHADO] O banco de dados '${process.env.DB_DATABASE}' não foi encontrado. Erro original: ${error.message}`;
     } else if (error.code === 'ER_BAD_FIELD_ERROR') {

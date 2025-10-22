@@ -24,7 +24,7 @@ export async function POST(request: Request) {
     // =======================================================================
     connection = await mysql.createConnection({
       host: process.env.DB_HOST,
-      port: Number(process.env.DB_PORT),
+      port: 3307, // FORÇANDO A PORTA CORRETA
       user: process.env.DB_USER,
       password: process.env.DB_PASSWORD,
       database: process.env.DB_DATABASE,
@@ -84,7 +84,7 @@ export async function POST(request: Request) {
 
     if (error.code === 'ECONNREFUSED' || error.code === 'ENOTFOUND') {
          return NextResponse.json(
-            { success: false, message: `[LOG DETALHADO] Não foi possível conectar ao servidor de banco de dados em '${process.env.DB_HOST}:${process.env.DB_PORT}'. Verifique se o servidor MySQL está rodando e se o HOST e a PORTA estão corretos. Erro original: ${error.message}` },
+            { success: false, message: `[LOG DETALHADO] Não foi possível conectar ao servidor de banco de dados em '${process.env.DB_HOST}:${3307}'. Verifique se o servidor MySQL está rodando e se o HOST e a PORTA estão corretos. Erro original: ${error.message}` },
             { status: 500 }
         );
     }
