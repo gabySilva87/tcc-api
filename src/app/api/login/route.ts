@@ -34,7 +34,7 @@ export async function POST(request: Request) {
     // Consulta para buscar o motorista pelo nome de usuário.
     // O campo url_foto foi removido pois não existe no schema fornecido.
     const [rows] = await connection.execute(
-      'SELECT id_motorista, nm_usuario, nr_senha, nm_motorista FROM tb_motorista WHERE nm_usuario = ?',
+      'SELECT id_motorista, nm_usuario, nr_senha, nm_motorista FROM motorista WHERE nm_usuario = ?',
       [usuario]
     );
 
