@@ -21,9 +21,8 @@ export async function POST(
   const body = await request.json();
   const { status, photo, driverId } = body; // Recebe o driverId do corpo da requisição
 
-  console.log(`[API REAL] Recebido pedido para atualizar encomenda ${encomendaId}`);
-  console.log(`[API REAL] Novo status: ${status}`);
-
+  console.log(`[API MOCK] Recebido pedido para atualizar encomenda ${encomendaId} para ${status}`);
+  
   // Validação básica
   if (!encomendaId || !status) {
     return NextResponse.json(
@@ -39,7 +38,20 @@ export async function POST(
       { status: 400 }
     );
   }
+  
+  // =======================================================================
+  // MODO DE TESTE: APENAS SIMULA SUCESSO
+  // =======================================================================
+  // Simula um pequeno atraso de rede
+  await new Promise(resolve => setTimeout(resolve, 500));
 
+  return NextResponse.json({
+    success: true,
+    message: `[MOCK] Encomenda #${encomendaId} atualizada para '${status}' com sucesso.`,
+  });
+
+  /*
+  // CÓDIGO ORIGINAL COM CONEXÃO AO BANCO DE DADOS (TEMPORARIAMENTE DESABILITADO)
   const statusId = statusMap[status];
   if (!statusId) {
       return NextResponse.json({ success: false, message: 'Status inválido fornecido.' }, { status: 400 });
@@ -97,4 +109,5 @@ export async function POST(
       await connection.end();
     }
   }
+  */
 }
