@@ -1,29 +1,38 @@
 import { NextResponse, NextRequest } from 'next/server';
+import mysql from 'mysql2/promise';
+
+// Mapeamento de status para IDs (assumindo que existam no banco)
+const statusMap: { [key: string]: number } = {
+  pendente: 1,
+  'em-transito': 2,
+  entregue: 3,
+  falha: 4,
+};
 
 /**
  * API Route para atualizar o status de uma encomenda.
- * ATUALMENTE EM MODO DE TESTE: Simula sucesso sem alterar o banco de dados.
+ * Agora se conecta ao banco de dados para persistir as mudanças.
  */
 export async function POST(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
-  const { id } = params;
+  const { id: encomendaId } = params;
   const body = await request.json();
-  const { status, photo } = body;
+  const { status, photo, driverId } = body; // Recebe o driverId do corpo da requisição
 
-  console.log(`[API MOCK] Recebido pedido para atualizar encomenda ${id}`);
-  console.log(`[API MOCK] Novo status: ${status}`);
-  console.log(`[API MOCK] Foto recebida: ${photo ? 'Sim' : 'Não'} (${photo ? Math.round(photo.length / 1024) + ' KB' : ''})`);
+  console.log(`[API REAL] Recebido pedido para atualizar encomenda ${encomendaId}`);
+  console.log(`[API REAL] Novo status: ${status}`);
 
   // Validação básica
-  if (!id || !status) {
+  if (!encomendaId || !status) {
     return NextResponse.json(
       { success: false, message: 'ID da encomenda e status são obrigatórios.' },
       { status: 400 }
     );
   }
 
+  // Valida a foto no front-end, mas verifica aqui se o status é 'entregue'
   if (status === 'entregue' && !photo) {
      return NextResponse.json(
       { success: false, message: 'Uma foto é obrigatória para marcar como entregue.' },
@@ -31,20 +40,61 @@ export async function POST(
     );
   }
 
-  // Simula um pequeno atraso de rede
-  await new Promise(resolve => setTimeout(resolve, 1500));
+  const statusId = statusMap[status];
+  if (!statusId) {
+      return NextResponse.json({ success: false, message: 'Status inválido fornecido.' }, { status: 400 });
+  }
 
-  // No futuro, aqui você faria a lógica de banco de dados:
-  // 1. Iniciar uma transação.
-  // 2. Salvar a imagem em um serviço de armazenamento (como Firebase Storage ou AWS S3).
-  // 3. Obter a URL da imagem salva.
-  // 4. Atualizar a tabela `encomenda` com o novo `id_status_encomenda`.
-  // 5. Inserir um novo registro na `historico_status_encomenda` com o novo status e a URL da foto.
-  // 6. Finalizar a transação.
-  
-  // Por enquanto, apenas retornamos sucesso.
-  return NextResponse.json({
-    success: true,
-    message: `Encomenda #${id} atualizada para '${status}' com sucesso (simulado).`,
-  });
+  let connection;
+  try {
+    // Conecta ao banco de dados.
+    connection = await mysql.createConnection({
+      host: process.env.DB_HOST,
+      port: Number(process.env.DB_PORT),
+      user: process.env.DB_USER,
+      password: process.env.DB_PASSWORD,
+      database: process.env.DB_DATABASE,
+      ssl: process.env.DB_SSL === 'true' ? { rejectUnauthorized: true } : undefined,
+    });
+    
+    // Inicia uma transação
+    await connection.beginTransaction();
+
+    // Passo 1: Atualizar a tabela `encomenda` com o novo status
+    await connection.execute(
+        'UPDATE tb_encomenda SET id_status_encomenda = ? WHERE id_encomenda = ?',
+        [statusId, encomendaId]
+    );
+
+    // Passo 2: Inserir um novo registro na `historico_status_encomenda`
+    // NOTA: A foto não é salva no banco, conforme solicitado. O motorista ID é necessário.
+    await connection.execute(
+      'INSERT INTO tb_historico_status_encomenda (id_encomenda, id_status_encomenda, id_motorista, dt_mudanca) VALUES (?, ?, ?, NOW())',
+      [encomendaId, statusId, driverId] // Usando o driverId recebido
+    );
+    
+    // Confirma a transação
+    await connection.commit();
+
+    return NextResponse.json({
+      success: true,
+      message: `Encomenda #${encomendaId} atualizada para '${status}' com sucesso.`,
+    });
+
+  } catch (error: any) {
+    // Se ocorrer um erro, desfaz a transação.
+    if (connection) {
+      await connection.rollback();
+    }
+    console.error(`[ERRO NA API DE ATUALIZAÇÃO DE ENCOMENDA ${encomendaId}]:`, error);
+    return NextResponse.json(
+      { success: false, message: 'Ocorreu um erro no servidor ao atualizar a encomenda.' },
+      { status: 500 }
+    );
+  } finally {
+    // Garante que a conexão com o banco de dados seja fechada.
+    if (connection) {
+      await connection.end();
+    }
+  }
 }

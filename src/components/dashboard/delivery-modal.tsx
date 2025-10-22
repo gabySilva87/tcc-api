@@ -123,15 +123,22 @@ export default function DeliveryModal({ isOpen, onClose, route, onSuccess }: Del
       }
       
       setStep('finalizing');
-      // MOCK API CALL
+      
+      const driverId = sessionStorage.getItem('driverId');
+
       const response = await fetch(`/api/encomendas/${route.id}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: 'entregue', photo: capturedImage }),
+        body: JSON.stringify({ 
+            status: 'entregue', 
+            photo: capturedImage,
+            driverId: driverId // Envia o ID do motorista para o backend
+        }),
       });
 
       if (!response.ok) {
-        throw new Error('Falha ao atualizar o status da entrega.');
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Falha ao atualizar o status da entrega.');
       }
       
       toast({
@@ -142,12 +149,12 @@ export default function DeliveryModal({ isOpen, onClose, route, onSuccess }: Del
       onSuccess(route.id);
       cleanupAndClose();
 
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error during delivery confirmation:', error);
       toast({
         variant: 'destructive',
         title: 'Erro!',
-        description: 'Não foi possível confirmar a entrega. Tente novamente.',
+        description: error.message || 'Não foi possível confirmar a entrega. Tente novamente.',
       });
       setStep('confirm'); // Go back to confirmation step on error
     } finally {
@@ -169,6 +176,7 @@ export default function DeliveryModal({ isOpen, onClose, route, onSuccess }: Del
           {step === 'camera' && (
             <div className="space-y-4">
               <div className="w-full aspect-video bg-muted rounded-md overflow-hidden flex items-center justify-center">
+                <canvas ref={canvasRef} className="hidden" />
                 <video ref={videoRef} className="w-full h-full object-cover" autoPlay muted playsInline />
                 {hasCameraPermission === false && (
                     <div className="text-center p-4">
