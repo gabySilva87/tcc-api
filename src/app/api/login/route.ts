@@ -81,28 +81,19 @@ export async function POST(request: Request) {
   } catch (error: any) {
     // Tratamento de erros de conexão e outros erros do servidor.
     console.error('[ERRO NA API DE LOGIN]:', error);
+    
+    let errorMessage = 'Ocorreu um erro no servidor.';
+    if (error.code === 'ECONNREFUSED') {
+        errorMessage = 'Não foi possível conectar ao servidor de banco de dados. Verifique se o serviço MySQL está em execução e se a porta está correta.';
+    } else if (error.code === 'ER_ACCESS_DENIED_ERROR') {
+        errorMessage = 'Acesso negado ao banco de dados. Verifique o usuário e a senha no arquivo .env.';
+    } else if (error.code === 'ER_BAD_DB_ERROR') {
+        errorMessage = `O banco de dados '${process.env.DB_DATABASE}' não existe. Verifique o nome no arquivo .env.`;
+    }
 
-    if (error.code === 'ECONNREFUSED' || error.code === 'ENOTFOUND') {
-         return NextResponse.json(
-            { success: false, message: `[LOG DETALHADO] Não foi possível conectar ao servidor de banco de dados em '${process.env.DB_HOST}:${3307}'. Verifique se o servidor MySQL está rodando e se o HOST e a PORTA estão corretos. Erro original: ${error.message}` },
-            { status: 500 }
-        );
-    }
-    if (error.code === 'ER_ACCESS_DENIED_ERROR') {
-        return NextResponse.json(
-            { success: false, message: `[LOG DETALHADO] Acesso negado para o usuário '${process.env.DB_USER}'. Verifique o usuário e a senha do banco de dados. Erro original: ${error.message}` },
-            { status: 500 }
-        );
-    }
-    if (error.code === 'ER_BAD_DB_ERROR') {
-        return NextResponse.json(
-            { success: false, message: `[LOG DETALHADO] O banco de dados '${process.env.DB_DATABASE}' não foi encontrado no host. Verifique se o banco de dados foi criado. Erro original: ${error.message}` },
-            { status: 500 }
-        );
-    }
     // Erro genérico para outras falhas.
     return NextResponse.json(
-      { success: false, message: `Ocorreu um erro no servidor. Verifique o console da aplicação para mais detalhes. Erro: ${error.message}` },
+      { success: false, message: errorMessage },
       { status: 500 }
     );
   } finally {

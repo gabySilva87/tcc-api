@@ -72,9 +72,18 @@ export async function POST(request: Request) {
     }
     console.error('[ERRO NA API DE CRIAÇÃO DE ENCOMENDA]:', error);
     
+    let errorMessage = 'Ocorreu um erro no servidor ao criar a encomenda.';
+    if (error.code === 'ER_ACCESS_DENIED_ERROR') {
+        errorMessage = 'Acesso negado ao banco de dados. Verifique as credenciais (usuário/senha) no arquivo .env.';
+    } else if (error.code === 'ECONNREFUSED') {
+        errorMessage = 'Não foi possível conectar ao banco de dados. Verifique se o servidor MySQL está rodando e se a porta está correta.';
+    } else if (error.code === 'ER_BAD_DB_ERROR') {
+        errorMessage = `O banco de dados '${process.env.DB_DATABASE}' não foi encontrado. Verifique se o nome está correto no .env.`;
+    }
+
     // Retorna uma mensagem de erro genérica.
     return NextResponse.json(
-      { success: false, message: 'Ocorreu um erro no servidor ao criar a encomenda.' },
+      { success: false, message: errorMessage },
       { status: 500 }
     );
   } finally {
