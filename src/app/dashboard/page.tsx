@@ -7,7 +7,7 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
 // Importa ícones da biblioteca lucide-react.
-import { Map, CheckCheck } from "lucide-react";
+import { Map, CheckCheck, BookClock } from "lucide-react";
 // Importa o componente de imagem otimizada do Next.js.
 import Image from "next/image";
 
@@ -16,6 +16,8 @@ import { LogoutButton } from "@/components/logout-button";
 import PendingTab from "@/components/dashboard/pending-tab";
 import DeliveredTab from "@/components/dashboard/delivered-tab";
 import ProfileTab from "@/components/dashboard/profile-tab";
+import HistoryTab from "@/components/dashboard/history-tab";
+import type { Route } from "@/components/dashboard/pending-tab";
 
 // Componente principal da página da dashboard.
 export default function DashboardPage() {
@@ -26,6 +28,14 @@ export default function DashboardPage() {
   const [activeTab, setActiveTab] = useState('pending');
   // Estado para verificar se o componente já foi montado no cliente.
   const [isMounted, setIsMounted] = useState(false);
+
+  // Estados para gerenciar as listas de entregas
+  const [pendingRoutes, setPendingRoutes] = useState<Route[]>([]);
+  const [deliveredRoutes, setDeliveredRoutes] = useState<Route[]>([]);
+  const [historyRoutes, setHistoryRoutes] = useState<Route[]>([]);
+  
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   // `useEffect` para executar código do lado do cliente após a montagem inicial.
   useEffect(() => {
@@ -40,11 +50,47 @@ export default function DashboardPage() {
     }
     // Define que o componente foi montado. Isso evita erros de hidratação.
     setIsMounted(true);
+    
+    // Busca as rotas pendentes
+    const fetchInitialRoutes = async () => {
+        const driverId = sessionStorage.getItem('driverId');
+        if (!driverId) {
+            setError('ID do motorista não encontrado.');
+            setLoading(false);
+            return;
+        }
+        try {
+            const response = await fetch(`/api/routes?driverId=${driverId}`);
+            if (!response.ok) throw new Error('Falha ao carregar rotas.');
+            const data = await response.json();
+            setPendingRoutes(data);
+        } catch (err: any) {
+            setError(err.message);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    fetchInitialRoutes();
+
   }, []);
+
+  const handleDeliverySuccess = (completedRoute: Route) => {
+    setPendingRoutes(prev => prev.filter(r => r.id !== completedRoute.id));
+    
+    const successfulRoute = { ...completedRoute, status: 'entregue' };
+    setDeliveredRoutes(prev => [successfulRoute, ...prev]);
+    setHistoryRoutes(prev => [successfulRoute, ...prev]);
+  };
+  
+  const handleDeliveryFailure = (failedRoute: Route) => {
+    // No futuro, podemos adicionar lógica para lidar com falhas
+  };
+
 
   const renderContent = () => {
     // Se o componente ainda não foi montado, exibe um esqueleto de UI para evitar erro de hidratação.
-    if (!isMounted) {
+    if (!isMounted || loading) {
       return (
         <div className="space-y-8">
             <Skeleton className="h-10 w-3/4" />
@@ -68,7 +114,7 @@ export default function DashboardPage() {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-2 bg-muted/50 p-1 h-auto">
+          <TabsList className="grid w-full grid-cols-3 bg-muted/50 p-1 h-auto">
             <TabsTrigger value="pending" className="py-2.5 text-sm">
               <Map className="w-4 h-4 mr-2"/>
               Pendentes
@@ -77,13 +123,27 @@ export default function DashboardPage() {
               <CheckCheck className="w-4 h-4 mr-2"/>
               Entregues
             </TabsTrigger>
+             <TabsTrigger value="history" className="py-2.5 text-sm">
+              <BookClock className="w-4 h-4 mr-2"/>
+              Histórico
+            </TabsTrigger>
           </TabsList>
           
           <TabsContent value="pending" className="mt-6">
-            <PendingTab />
+            <PendingTab 
+                routes={pendingRoutes} 
+                loading={loading}
+                error={error}
+                onDeliverySuccess={handleDeliverySuccess}
+                onDeliveryFailure={handleDeliveryFailure}
+                setRoutes={setPendingRoutes}
+            />
           </TabsContent>
           <TabsContent value="delivered" className="mt-6">
-            <DeliveredTab />
+            <DeliveredTab deliveredRoutes={deliveredRoutes} />
+          </TabsContent>
+          <TabsContent value="history" className="mt-6">
+            <HistoryTab historyItems={historyRoutes} />
           </TabsContent>
         </Tabs>
       </>

@@ -19,66 +19,67 @@ export interface Route {
   title: string;
   description: string;
   address: string;
-  status: string;
+  status: 'pendente' | 'entregue' | 'falha';
   time: string;
 }
 
+interface PendingTabProps {
+    routes: Route[];
+    loading: boolean;
+    error: string | null;
+    onDeliverySuccess: (route: Route) => void;
+    onDeliveryFailure: (route: Route) => void;
+    setRoutes: React.Dispatch<React.SetStateAction<Route[]>>;
+}
+
 // Componente para a aba de rotas/entregas.
-export default function PendingTab() {
-  // Estados para gerenciar a lista de rotas, o estado de carregamento e possíveis erros.
-  const [routes, setRoutes] = useState<Route[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+export default function PendingTab({ routes, loading, error, onDeliverySuccess, setRoutes }: PendingTabProps) {
   // Estado para armazenar a rota que está selecionada na lista.
   const [selectedRoute, setSelectedRoute] = useState<Route | null>(null);
   // Estado para controlar a visibilidade do modal de entrega
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  // `useCallback` para memorizar a função de busca e evitar recriações desnecessárias.
+  // Efeito para selecionar a primeira rota quando a lista é carregada
+  useEffect(() => {
+    if (routes.length > 0 && !selectedRoute) {
+      setSelectedRoute(routes[0]);
+    }
+    if (routes.length === 0) {
+      setSelectedRoute(null);
+    }
+  }, [routes, selectedRoute]);
+
+
+  const handleSuccess = (deliveryId: string | number) => {
+    const completedRoute = routes.find(r => r.id === deliveryId);
+    if(completedRoute) {
+        onDeliverySuccess(completedRoute);
+    }
+    setIsModalOpen(false);
+    // Seleciona a próxima rota da lista ou limpa a seleção
+    const currentIndex = routes.findIndex(r => r.id === deliveryId);
+    if (routes.length > 1) {
+        setSelectedRoute(routes[currentIndex + 1] || routes[0]);
+    } else {
+        setSelectedRoute(null);
+    }
+  };
+  
   const fetchRoutes = useCallback(async () => {
     const driverId = sessionStorage.getItem('driverId');
     if (!driverId) {
-      setError('ID do motorista não encontrado. Faça o login novamente.');
-      setLoading(false);
       return;
     }
-
-    setLoading(true);
-    setError(null);
     try {
       const response = await fetch(`/api/routes?driverId=${driverId}`);
-      
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Falha ao buscar os dados das rotas.');
-      }
-      
+      if (!response.ok) throw new Error('Falha ao recarregar rotas');
       const data = await response.json();
       setRoutes(data);
-      if (data.length > 0) {
-          setSelectedRoute(data[0]); 
-      } else {
-        setSelectedRoute(null);
-      }
-    } catch (err: any) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
+    } catch (err) {
+      // O erro é gerenciado no componente pai
     }
-  }, []);
+  }, [setRoutes]);
 
-  // `useEffect` para buscar os dados das rotas da API quando o componente é montado.
-  useEffect(() => {
-    fetchRoutes();
-  }, [fetchRoutes]);
-
-  const handleDeliverySuccess = (deliveryId: string | number) => {
-    // Remove a rota da lista de pendentes e fecha o modal
-    setRoutes(prevRoutes => prevRoutes.filter(route => route.id !== deliveryId));
-    setSelectedRoute(null);
-    setIsModalOpen(false);
-    // Opcional: mostrar um toast de sucesso
-  };
 
   // Se os dados ainda estão sendo carregados, exibe um esqueleto de UI.
   if (loading) {
@@ -107,10 +108,6 @@ export default function PendingTab() {
                 <p className="text-muted-foreground text-sm mt-2">
                     Não foi possível carregar os dados das entregas. Verifique a API ou tente novamente.
                 </p>
-                <Button variant="destructive" className="mt-4" onClick={fetchRoutes}>
-                    <RefreshCw className="w-4 h-4 mr-2"/>
-                    Tentar Novamente
-                </Button>
             </CardContent>
         </Card>
     );
@@ -220,7 +217,7 @@ export default function PendingTab() {
           isOpen={isModalOpen}
           onClose={() => setIsModalOpen(false)}
           route={selectedRoute}
-          onSuccess={handleDeliverySuccess}
+          onSuccess={handleSuccess}
         />
       )}
     </>
