@@ -19,8 +19,9 @@ import ProfileTab from "@/components/dashboard/profile-tab";
 
 // Componente principal da página da dashboard.
 export default function DashboardPage() {
-  // Define um estado para armazenar o nome do motorista.
+  // Define estados para armazenar os dados do motorista.
   const [driverName, setDriverName] = useState('');
+  const [driverPhotoUrl, setDriverPhotoUrl] = useState('');
   // Define o estado da aba ativa. 'pending' é o valor inicial.
   const [activeTab, setActiveTab] = useState('pending');
   // Estado para verificar se o componente já foi montado no cliente.
@@ -28,10 +29,14 @@ export default function DashboardPage() {
 
   // `useEffect` para executar código do lado do cliente após a montagem inicial.
   useEffect(() => {
-    // Busca o nome do motorista que foi salvo no `sessionStorage`.
+    // Busca os dados do motorista que foram salvos no `sessionStorage`.
     const name = sessionStorage.getItem('driverName');
+    const photoUrl = sessionStorage.getItem('driverPhotoUrl');
     if (name) {
       setDriverName(name);
+    }
+    if (photoUrl) {
+      setDriverPhotoUrl(photoUrl);
     }
     // Define que o componente foi montado. Isso evita erros de hidratação.
     setIsMounted(true);
@@ -51,7 +56,7 @@ export default function DashboardPage() {
 
     // Se a aba de perfil está ativa, renderiza o componente do perfil.
     if (activeTab === 'profile') {
-        return <ProfileTab driverName={driverName} onBack={() => setActiveTab('pending')} />;
+        return <ProfileTab driverName={driverName} driverPhotoUrl={driverPhotoUrl} onBack={() => setActiveTab('pending')} />;
     }
 
     // Caso contrário, renderiza a visualização principal com as abas.
@@ -108,7 +113,7 @@ export default function DashboardPage() {
             <div className="flex items-center gap-3">
                <button onClick={() => setActiveTab('profile')} className="rounded-full focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2">
                 <Avatar>
-                  <AvatarImage src="https://picsum.photos/seed/123/100/100" alt="Motorista" data-ai-hint="driver portrait" />
+                  <AvatarImage src={driverPhotoUrl} alt={driverName} data-ai-hint="driver portrait" />
                   <AvatarFallback>{driverName ? driverName.charAt(0) : 'M'}</AvatarFallback>
                 </Avatar>
                </button>

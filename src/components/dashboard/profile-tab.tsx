@@ -10,11 +10,12 @@ import { FileText, Smartphone, Truck, Star, Shield, ArrowLeft } from "lucide-rea
 // Define a interface para as propriedades (`props`) que este componente recebe.
 interface ProfileTabProps {
     driverName: string; // O nome do motorista.
+    driverPhotoUrl: string; // A URL da foto do motorista.
     onBack: () => void; // Uma função para ser chamada quando o botão de voltar for clicado.
 }
 
-// O componente ProfileTab recebe as `props` (incluindo `driverName` e `onBack`).
-export default function ProfileTab({ driverName, onBack }: ProfileTabProps) {
+// O componente ProfileTab recebe as `props`.
+export default function ProfileTab({ driverName, driverPhotoUrl, onBack }: ProfileTabProps) {
     // Determina a inicial do motorista para usar no `AvatarFallback`.
     const driverInitial = driverName ? driverName.charAt(0).toUpperCase() : 'M';
 
@@ -33,7 +34,7 @@ export default function ProfileTab({ driverName, onBack }: ProfileTabProps) {
                     {/* Contêiner para o avatar, com uma borda colorida. */}
                     <div className="flex justify-center mb-4">
                         <Avatar className="w-24 h-24 border-4 border-primary">
-                            <AvatarImage src="https://picsum.photos/seed/123/100/100" alt="Motorista" data-ai-hint="driver portrait" />
+                            <AvatarImage src={driverPhotoUrl} alt={driverName} data-ai-hint="driver portrait" />
                             {/* O `Fallback` mostra a inicial do nome se a imagem não carregar. */}
                             <AvatarFallback className="text-4xl">{driverInitial}</AvatarFallback>
                         </Avatar>

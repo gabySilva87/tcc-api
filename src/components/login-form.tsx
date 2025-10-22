@@ -27,6 +27,7 @@ const initialState = {
   errors: {},           // Armazena erros de validação específicos de cada campo.
   driverName: null,     // Armazena o nome do motorista após o login bem-sucedido.
   driverId: null,       // Armazena o ID do motorista.
+  driverPhotoUrl: null, // Armazena a URL da foto do motorista.
 };
 
 // Componente para o botão de envio do formulário. Ele é separado para poder
@@ -60,7 +61,7 @@ export function LoginForm() {
   // `state` contém a resposta da action (sucesso, erros, mensagens).
   // `formAction` é a função que será chamada quando o formulário for submetido (`<form action={formAction}>`).
   // `login` é a Server Action, e `initialState` é o estado inicial.
-  const [state, formAction] = useActionState(login, initialState);
+  const [state, formAction] = useActionState(login, initialState as any);
 
   // `useEffect` é usado para executar "efeitos colaterais" sempre que os valores em seu array de dependências mudam.
   // Neste caso, ele observa o `state` retornado pela Server Action para reagir a mudanças.
@@ -72,10 +73,12 @@ export function LoginForm() {
         title: 'Sucesso!',
         description: state.message,
       });
-      // Salva o nome e o ID do motorista no `sessionStorage` para serem usados em outras páginas.
-      // `sessionStorage` persiste dados apenas enquanto a aba do navegador está aberta.
+      // Salva o nome, ID e URL da foto do motorista no `sessionStorage`.
       sessionStorage.setItem('driverName', state.driverName);
-      sessionStorage.setItem('driverId', String(state.driverId)); // Salva o ID
+      sessionStorage.setItem('driverId', String(state.driverId));
+      if (state.driverPhotoUrl) {
+          sessionStorage.setItem('driverPhotoUrl', state.driverPhotoUrl);
+      }
       
       // Aguarda 500ms para o usuário ver o toast antes de redirecionar para a dashboard.
       setTimeout(() => {
@@ -132,7 +135,7 @@ export function LoginForm() {
             {/* Contêiner para a mensagem de erro de validação do campo "usuário".
                 `aria-live="polite"` informa aos leitores de tela para anunciar a mensagem quando ela aparecer. */}
             <div id="usuario-error" aria-live="polite" aria-atomic="true">
-              {state?.errors?.usuario && <p className="text-sm font-medium text-destructive">{state.errors.usuario[0]}</p>}
+              {(state as any)?.errors?.usuario && <p className="text-sm font-medium text-destructive">{(state as any).errors.usuario[0]}</p>}
             </div>
           </div>
           {/* Seção para o campo de senha. */}
@@ -142,7 +145,7 @@ export function LoginForm() {
             <Input id="senha" type="password" name="senha" placeholder="Digite sua senha" required aria-describedby='senha-error' className="bg-white text-black placeholder:text-gray-500 rounded-full px-5 py-3 h-12"/>
             {/* Contêiner para a mensagem de erro de validação do campo "senha". */}
             <div id="senha-error" aria-live="polite" aria-atomic="true">
-             {state?.errors?.senha && <p className="text-sm font-medium text-destructive">{state.errors.senha[0]}</p>}
+             {(state as any)?.errors?.senha && <p className="text-sm font-medium text-destructive">{(state as any).errors.senha[0]}</p>}
             </div>
           </div>
         </CardContent>

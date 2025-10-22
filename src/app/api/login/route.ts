@@ -26,7 +26,8 @@ export async function POST(request: Request) {
         success: true, 
         message: 'Login de teste bem-sucedido!', 
         driverName: 'Motorista Teste',
-        driverId: '1' 
+        driverId: '1',
+        driverPhotoUrl: 'https://picsum.photos/seed/123/100/100'
     });
   } else {
      return NextResponse.json(
@@ -51,8 +52,9 @@ export async function POST(request: Request) {
       ssl: process.env.DB_SSL === 'true' ? { rejectUnauthorized: true } : undefined,
     });
 
+    // Atualiza a consulta para buscar também a URL da foto do motorista.
     const [rows] = await connection.execute(
-      'SELECT id_motorista, nm_usuario, nr_senha, nm_motorista FROM tb_motorista WHERE nm_usuario = ?',
+      'SELECT id_motorista, nm_usuario, nr_senha, nm_motorista, url_foto FROM tb_motorista WHERE nm_usuario = ?',
       [usuario]
     );
 
@@ -73,7 +75,8 @@ export async function POST(request: Request) {
             success: true, 
             message: 'Login bem-sucedido!', 
             driverName: driver.nm_motorista,
-            driverId: driver.id_motorista 
+            driverId: driver.id_motorista,
+            driverPhotoUrl: driver.url_foto // Retorna a URL da foto.
         });
       }
       else{
