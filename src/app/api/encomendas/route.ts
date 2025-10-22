@@ -20,7 +20,7 @@ export async function POST(request: Request) {
     // Conecta ao banco de dados.
     connection = await mysql.createConnection({
       host: process.env.DB_HOST,
-      port: 3307, // FORÇANDO A PORTA CORRETA
+      port: 3307,
       user: process.env.DB_USER,
       password: process.env.DB_PASSWORD,
       database: process.env.DB_DATABASE,
