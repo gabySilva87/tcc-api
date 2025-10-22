@@ -3,7 +3,7 @@
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { BookClock, AlertCircle, CheckCircle, PackageSearch } from "lucide-react";
+import { History, AlertCircle, CheckCircle, PackageSearch } from "lucide-react";
 import { Button } from "../ui/button";
 import type { Route } from './pending-tab';
 
@@ -16,7 +16,7 @@ export default function HistoryTab({ historyItems }: HistoryTabProps) {
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <BookClock className="w-6 h-6 text-primary" />
+          <History className="w-6 h-6 text-primary" />
           Histórico do Dia
         </CardTitle>
         <CardDescription>

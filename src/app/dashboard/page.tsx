@@ -7,7 +7,7 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
 // Importa ícones da biblioteca lucide-react.
-import { Map, CheckCheck, BookClock } from "lucide-react";
+import { Map, CheckCheck, History } from "lucide-react";
 // Importa o componente de imagem otimizada do Next.js.
 import Image from "next/image";
 
@@ -124,7 +124,7 @@ export default function DashboardPage() {
               Entregues
             </TabsTrigger>
              <TabsTrigger value="history" className="py-2.5 text-sm">
-              <BookClock className="w-4 h-4 mr-2"/>
+              <History className="w-4 h-4 mr-2"/>
               Histórico
             </TabsTrigger>
           </TabsList>
