@@ -4,3 +4,4 @@ npm run dev
 Para usar npm start sem erros:
 npm run build
 npm start
+fazer uma .env.local
