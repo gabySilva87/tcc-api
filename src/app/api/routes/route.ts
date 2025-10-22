@@ -91,15 +91,15 @@ export async function GET(request: NextRequest) {
   } catch (error: any) {
     console.error('[ERRO NA API DE ROTAS]:', error);
 
-    let errorMessage = 'Ocorreu um erro ao buscar os dados das rotas.';
+    let errorMessage = `Ocorreu um erro ao buscar os dados das rotas. Detalhes: ${error.message}`;
     if (error.code === 'ECONNREFUSED' || error.code === 'ENOTFOUND') {
-      errorMessage = `Não foi possível conectar ao servidor de banco de dados em '${process.env.DB_HOST}'. Verifique o DB_HOST e a porta.`;
+      errorMessage = `[LOG DETALHADO] Não foi possível conectar ao servidor de banco de dados em '${process.env.DB_HOST}:${process.env.DB_PORT}'. Verifique se o servidor MySQL está rodando. Erro original: ${error.message}`;
     } else if (error.code === 'ER_ACCESS_DENIED_ERROR') {
-      errorMessage = `Acesso negado para o usuário '${process.env.DB_USER}'. Verifique as credenciais do banco.`;
+      errorMessage = `[LOG DETALHADO] Acesso negado para o usuário '${process.env.DB_USER}'. Verifique as credenciais do banco. Erro original: ${error.message}`;
     } else if (error.code === 'ER_BAD_DB_ERROR') {
-      errorMessage = `O banco de dados '${process.env.DB_DATABASE}' não foi encontrado.`;
+      errorMessage = `[LOG DETALHADO] O banco de dados '${process.env.DB_DATABASE}' não foi encontrado. Erro original: ${error.message}`;
     } else if (error.code === 'ER_BAD_FIELD_ERROR') {
-      errorMessage = `Coluna não encontrada. Verifique a consulta SQL. Detalhes: ${error.message}`;
+      errorMessage = `[LOG DETALHADO] Coluna não encontrada na consulta SQL. Detalhes: ${error.message}`;
     }
 
     return NextResponse.json(
