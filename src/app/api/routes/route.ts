@@ -29,15 +29,22 @@ async function getAddressFromCep(cep: string): Promise<CepApiResponse['data'] | 
     const baseUrl = `${protocol}://${host}`;
     
     const response = await fetch(`${baseUrl}/api/cep/${cep}`);
+    
+    // Se a resposta não for OK, não podemos converter para JSON.
+    if (!response.ok) {
+        console.warn(`[API de CEP] Falha na requisição para o CEP ${cep}. Status: ${response.status}`);
+        return null;
+    }
+
     const result: CepApiResponse = await response.json();
 
     if (result.success && result.data) {
       return result.data;
     }
-    console.warn(`[API de CEP] CEP não encontrado ou falhou para: ${cep}`);
+    console.warn(`[API de CEP] Resposta sem sucesso ou sem dados para o CEP: ${cep}`);
     return null;
   } catch (error) {
-    console.error(`[API de CEP] Falha ao buscar CEP ${cep}:`, error);
+    console.error(`[API de CEP] Exceção ao buscar CEP ${cep}:`, error);
     return null;
   }
 }
@@ -83,49 +90,48 @@ export async function GET(request: NextRequest) {
     );
 
     const routesPromises = (rows as any[]).map(async (row) => {
-      // Descriptografia segura e individual
+      // Etapa 1: Descriptografia segura e individual
       let decryptedCep: string | null = null;
-      let decryptedNumero = '';
-      let decryptedComplemento = '';
+      let decryptedNumero: string | null = null;
+      let decryptedComplemento: string | null = null;
 
       try {
         if (row.nr_cep) decryptedCep = decrypt(row.nr_cep);
-      } catch (e) { console.error(`Falha ao descriptografar CEP para encomenda ${row.nr_encomenda}`); }
+      } catch (e) { console.error(`Falha ao descriptografar CEP para encomenda ${row.nr_encomenda}:`, e); }
 
       try {
         if (row.nr_casa) decryptedNumero = decrypt(row.nr_casa);
-      } catch (e) { console.error(`Falha ao descriptografar número para encomenda ${row.nr_encomenda}`); }
+      } catch (e) { console.error(`Falha ao descriptografar número para encomenda ${row.nr_encomenda}:`, e); }
       
       try {
         if (row.ds_complemento) decryptedComplemento = decrypt(row.ds_complemento);
-      } catch (e) { console.error(`Falha ao descriptografar complemento para encomenda ${row.nr_encomenda}`); }
+      } catch (e) { console.error(`Falha ao descriptografar complemento para encomenda ${row.nr_encomenda}:`, e); }
 
-      // Busca de endereço segura
+      // Etapa 2: Busca de endereço segura
       let addressDetails = null;
       if (decryptedCep) {
         addressDetails = await getAddressFromCep(decryptedCep);
       }
 
-      // Montagem segura do endereço final
-      const addressParts = [];
+      // Etapa 3: Montagem segura do endereço final
+      const addressParts: string[] = [];
       if (addressDetails) {
         if (addressDetails.logradouro) addressParts.push(addressDetails.logradouro);
         if (decryptedNumero) addressParts.push(`Nº ${decryptedNumero}`);
         if (decryptedComplemento) addressParts.push(decryptedComplemento);
         if (addressDetails.bairro) addressParts.push(addressDetails.bairro);
         if (addressDetails.localidade && addressDetails.uf) addressParts.push(`${addressDetails.localidade} - ${addressDetails.uf}`);
-      } else if (decryptedCep) {
-        addressParts.push(`CEP: ${decryptedCep}`);
-        if (decryptedNumero) addressParts.push(`Nº ${decryptedNumero}`);
-        if (decryptedComplemento) addressParts.push(decryptedComplemento);
-      } else if (decryptedNumero) {
-        addressParts.push(`Nº ${decryptedNumero}`);
-        if (decryptedComplemento) addressParts.push(decryptedComplemento);
+      
+      // Fallback se a API de CEP falhar, mas tivermos os dados do banco
+      } else if (decryptedCep || decryptedNumero) {
+          if(decryptedCep) addressParts.push(`CEP: ${decryptedCep}`);
+          if(decryptedNumero) addressParts.push(`Nº ${decryptedNumero}`);
+          if(decryptedComplemento) addressParts.push(decryptedComplemento);
       }
-
+      
       const fullAddress = addressParts.length > 0 ? addressParts.join(', ') : 'Endereço indisponível';
       
-      // Formatação de data segura
+      // Etapa 4: Formatação de data segura
       let formattedTime = 'N/A';
       if (row.dt_entrega) {
         try {
@@ -153,7 +159,7 @@ export async function GET(request: NextRequest) {
       };
     });
 
-    // Aguarda todas as promessas serem resolvidas
+    // Aguarda todas as promessas (buscas de CEP, etc.) serem resolvidas
     const routes = await Promise.all(routesPromises);
     
     return NextResponse.json(routes);
@@ -163,11 +169,11 @@ export async function GET(request: NextRequest) {
 
     let errorMessage = 'Ocorreu um erro ao buscar os dados das rotas.';
     if (error.code === 'ECONNREFUSED' || error.code === 'ENOTFOUND') {
-      errorMessage = `Não foi possível conectar ao banco de dados em '${process.env.DB_HOST}'.`;
+      errorMessage = `Não foi possível conectar ao servidor de banco de dados em '${process.env.DB_HOST}'. Verifique o DB_HOST e a porta.`;
     } else if (error.code === 'ER_ACCESS_DENIED_ERROR') {
-      errorMessage = `Acesso negado para o usuário '${process.env.DB_USER}'.`;
+      errorMessage = `Acesso negado para o usuário '${process.env.DB_USER}'. Verifique as credenciais do banco.`;
     } else if (error.code === 'ER_BAD_DB_ERROR') {
-      errorMessage = `Banco de dados '${process.env.DB_DATABASE}' não encontrado.`;
+      errorMessage = `O banco de dados '${process.env.DB_DATABASE}' não foi encontrado.`;
     } else if (error.code === 'ER_BAD_FIELD_ERROR') {
       errorMessage = `Coluna não encontrada. Verifique a consulta SQL. Detalhes: ${error.message}`;
     }
