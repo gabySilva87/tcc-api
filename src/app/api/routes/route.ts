@@ -128,12 +128,17 @@ export async function GET(request: NextRequest) {
       // Formatação de data segura
       let formattedTime = 'N/A';
       if (row.dt_entrega) {
-        const deliveryDate = new Date(row.dt_entrega);
-        if (!isNaN(deliveryDate.getTime())) { // Verifica se a data é válida
-          formattedTime = deliveryDate.toLocaleDateString('pt-BR', {
-              day: '2-digit', month: '2-digit', year: 'numeric',
-              hour: '2-digit', minute: '2-digit'
-          }).replace(',', '');
+        try {
+            const deliveryDate = new Date(row.dt_entrega);
+            // Verifica se a data é válida antes de formatar
+            if (!isNaN(deliveryDate.getTime())) {
+                formattedTime = deliveryDate.toLocaleDateString('pt-BR', {
+                    day: '2-digit', month: '2-digit', year: 'numeric',
+                    hour: '2-digit', minute: '2-digit'
+                }).replace(',', '');
+            }
+        } catch (e) {
+            console.error(`Data de entrega inválida para encomenda ${row.nr_encomenda}: ${row.dt_entrega}`);
         }
       }
 
@@ -148,6 +153,7 @@ export async function GET(request: NextRequest) {
       };
     });
 
+    // Aguarda todas as promessas serem resolvidas
     const routes = await Promise.all(routesPromises);
     
     return NextResponse.json(routes);
