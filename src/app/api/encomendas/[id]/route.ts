@@ -1,3 +1,4 @@
+
 import { NextResponse, NextRequest } from 'next/server';
 import mysql from 'mysql2/promise';
 
@@ -19,39 +20,18 @@ export async function POST(
 ) {
   const { id: encomendaId } = params;
   const body = await request.json();
-  const { status, photo, driverId } = body; // Recebe o driverId do corpo da requisição
+  const { status, driverId } = body; // A foto é ignorada conforme solicitado.
 
-  console.log(`[API MOCK] Recebido pedido para atualizar encomenda ${encomendaId} para ${status}`);
+  console.log(`[API REAL] Recebido pedido para atualizar encomenda ${encomendaId} para ${status}`);
   
   // Validação básica
-  if (!encomendaId || !status) {
+  if (!encomendaId || !status || !driverId) {
     return NextResponse.json(
-      { success: false, message: 'ID da encomenda e status são obrigatórios.' },
-      { status: 400 }
-    );
-  }
-
-  // Valida a foto no front-end, mas verifica aqui se o status é 'entregue'
-  if (status === 'entregue' && !photo) {
-     return NextResponse.json(
-      { success: false, message: 'Uma foto é obrigatória para marcar como entregue.' },
+      { success: false, message: 'ID da encomenda, status e ID do motorista são obrigatórios.' },
       { status: 400 }
     );
   }
   
-  // =======================================================================
-  // MODO DE TESTE: APENAS SIMULA SUCESSO
-  // =======================================================================
-  // Simula um pequeno atraso de rede
-  await new Promise(resolve => setTimeout(resolve, 500));
-
-  return NextResponse.json({
-    success: true,
-    message: `[MOCK] Encomenda #${encomendaId} atualizada para '${status}' com sucesso.`,
-  });
-
-  /*
-  // CÓDIGO ORIGINAL COM CONEXÃO AO BANCO DE DADOS (TEMPORARIAMENTE DESABILITADO)
   const statusId = statusMap[status];
   if (!statusId) {
       return NextResponse.json({ success: false, message: 'Status inválido fornecido.' }, { status: 400 });
@@ -74,14 +54,14 @@ export async function POST(
 
     // Passo 1: Atualizar a tabela `encomenda` com o novo status
     await connection.execute(
-        'UPDATE tb_encomenda SET id_status_encomenda = ? WHERE id_encomenda = ?',
+        'UPDATE encomenda SET id_status_encomenda = ? WHERE id_encomenda = ?',
         [statusId, encomendaId]
     );
 
     // Passo 2: Inserir um novo registro na `historico_status_encomenda`
     // NOTA: A foto não é salva no banco, conforme solicitado. O motorista ID é necessário.
     await connection.execute(
-      'INSERT INTO tb_historico_status_encomenda (id_encomenda, id_status_encomenda, id_motorista, dt_mudanca) VALUES (?, ?, ?, NOW())',
+      'INSERT INTO historico_status_encomenda (id_encomenda, id_status_encomenda, id_motorista, dt_mudanca) VALUES (?, ?, ?, NOW())',
       [encomendaId, statusId, driverId] // Usando o driverId recebido
     );
     
@@ -109,5 +89,4 @@ export async function POST(
       await connection.end();
     }
   }
-  */
 }

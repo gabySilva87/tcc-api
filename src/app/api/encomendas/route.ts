@@ -1,7 +1,6 @@
 
 import { NextResponse } from 'next/server';
 import mysql from 'mysql2/promise';
-import { encrypt } from '@/lib/crypto';
 
 // API Route para criar uma nova encomenda.
 export async function POST(request: Request) {
@@ -9,7 +8,7 @@ export async function POST(request: Request) {
   const { nr_encomenda, nm_cliente, cd_contato_cliente, endereco } = await request.json();
 
   // Validação básica dos dados recebidos.
-  if (!nr_encomenda || !nm_cliente || !endereco || !endereco.nr_cep || !endereco.nr_casa) {
+  if (!nr_encomenda || !nm_cliente || !endereco || !endereco.nr_cep || !endereco.nr_casa || !endereco.nm_rua) {
     return NextResponse.json(
       { success: false, message: 'Campos obrigatórios da encomenda ou endereço estão faltando.' },
       { status: 400 }
@@ -34,15 +33,9 @@ export async function POST(request: Request) {
     // =======================================================================
     // PASSO 1: INSERIR O ENDEREÇO
     // =======================================================================
-    // Criptografa os dados do endereço antes de salvar.
-    const encryptedCep = encrypt(endereco.nr_cep);
-    const encryptedCasa = encrypt(endereco.nr_casa);
-    const encryptedComplemento = endereco.ds_complemento ? encrypt(endereco.ds_complemento) : null;
-    
-    // Insere o endereço na tabela `tb_endereco`.
     const [enderecoResult] = await connection.execute(
-      'INSERT INTO tb_endereco (nr_cep, nr_casa, ds_complemento, created_at, updated_at) VALUES (?, ?, ?, NOW(), NOW())',
-      [encryptedCep, encryptedCasa, encryptedComplemento]
+      'INSERT INTO endereco (nr_cep, nr_casa, nm_rua, nm_avenida, ds_complemento) VALUES (?, ?, ?, ?, ?)',
+      [endereco.nr_cep, endereco.nr_casa, endereco.nm_rua, endereco.nm_avenida || null, endereco.ds_complemento || null]
     );
 
     const enderecoId = (enderecoResult as any).insertId;
@@ -53,9 +46,9 @@ export async function POST(request: Request) {
     // =======================================================================
     // PASSO 2: INSERIR A ENCOMENDA
     // =======================================================================
-    // Insere a encomenda na tabela `tb_encomenda`, usando o ID do endereço criado.
+    // O id_status_encomenda é definido como 1 (pendente) por padrão.
     const [encomendaResult] = await connection.execute(
-      'INSERT INTO tb_encomenda (nr_encomenda, nm_cliente, cd_contato_cliente, cd_endereco, created_at, updated_at) VALUES (?, ?, ?, ?, NOW(), NOW())',
+      'INSERT INTO encomenda (nr_encomenda, nm_cliente, nr_contato_cliente, id_endereco, id_status_encomenda, dt_cadastro) VALUES (?, ?, ?, ?, 1, NOW())',
       [nr_encomenda, nm_cliente, cd_contato_cliente, enderecoId]
     );
     

@@ -1,12 +1,10 @@
 
 import { NextResponse, NextRequest } from 'next/server';
 import mysql from 'mysql2/promise';
-import { decrypt } from '@/lib/crypto';
-import { headers } from 'next/headers';
 
 /**
  * API Route para buscar as rotas de entrega de um motorista.
- * ATUALMENTE EM MODO DE TESTE: Retorna dados mocados sem consultar o banco.
+ * Conecta-se ao banco de dados para buscar dados reais.
  */
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
@@ -14,76 +12,6 @@ export async function GET(request: NextRequest) {
 
   if (!driverId) {
     return NextResponse.json({ message: 'O ID do motorista é obrigatório.' }, { status: 400 });
-  }
-
-  // =======================================================================
-  // MODO DE TESTE: DADOS MOCADOS
-  // =======================================================================
-  const mockRoutes = [
-    {
-      id: '1',
-      title: 'Encomenda #ENC-001',
-      description: 'Cliente: João da Silva',
-      address: 'Rua das Flores, Nº 123, Apto 4B, Jardim Primavera, São Paulo - SP',
-      status: 'pendente',
-      time: '14/08/2024 10:30',
-      read: false,
-    },
-    {
-      id: '2',
-      title: 'Encomenda #ENC-002',
-      description: 'Cliente: Maria Oliveira',
-      address: 'Avenida Brasil, Nº 1500, Centro, Rio de Janeiro - RJ',
-      status: 'pendente',
-      time: '14/08/2024 14:00',
-      read: false,
-    },
-    {
-      id: '3',
-      title: 'Encomenda #ENC-003',
-      description: 'Cliente: Pedro Martins',
-      address: 'Praça da Sé, Nº 45, Lado Ímpar, Sé, São Paulo - SP',
-      status: 'pendente',
-      time: '14/08/2024 16:45',
-      read: false,
-    },
-  ];
-
-  // Simula um pequeno atraso de rede
-  await new Promise(resolve => setTimeout(resolve, 500));
-
-  return NextResponse.json(mockRoutes);
-
-  /*
-  // CÓDIGO ORIGINAL COM CONEXÃO AO BANCO DE DADOS (TEMPORARIAMENTE DESABILITADO)
-
-  interface CepApiResponse {
-    success: boolean;
-    data?: {
-      logradouro: string;
-      bairro: string;
-      localidade: string;
-      uf: string;
-    };
-    message?: string;
-  }
-
-  async function getAddressFromCep(cep: string): Promise<CepApiResponse['data'] | null> {
-    try {
-      const host = headers().get('host');
-      const protocol = process.env.NODE_ENV === 'development' ? 'http' : 'https';
-      const baseUrl = `${protocol}://${host}`;
-      const response = await fetch(`${baseUrl}/api/cep/${cep}`);
-      if (!response.ok) {
-        console.warn(`[API de CEP] Falha na requisição para o CEP ${cep}. Status: ${response.status}`);
-        return null;
-      }
-      const result: CepApiResponse = await response.json();
-      return result.success && result.data ? result.data : null;
-    } catch (error) {
-      console.error(`[API de CEP] Exceção ao buscar CEP ${cep}:`, error);
-      return null;
-    }
   }
 
   let connection;
@@ -97,6 +25,7 @@ export async function GET(request: NextRequest) {
       ssl: process.env.DB_SSL === 'true' ? { rejectUnauthorized: true } : undefined,
     });
 
+    // Consulta SQL ajustada para o schema fornecido
     const [rows] = await connection.execute(
       `SELECT 
         e.id_encomenda,
@@ -105,43 +34,29 @@ export async function GET(request: NextRequest) {
         r.dt_entrega,
         end.nr_cep,
         end.nr_casa,
-        end.ds_complemento
-       FROM tb_roteiro_entrega AS r
-       JOIN tb_encomenda AS e ON r.id_encomenda = e.id_encomenda
-       LEFT JOIN tb_endereco AS end ON e.id_endereco = end.id_endereco
-       WHERE r.id_motorista = ?`,
+        end.nm_rua,
+        end.nm_avenida,
+        end.ds_complemento,
+        se.nm_status as status_nome
+       FROM roteiro_entrega AS r
+       JOIN encomenda AS e ON r.id_encomenda = e.id_encomenda
+       LEFT JOIN endereco AS end ON e.id_endereco = end.id_endereco
+       LEFT JOIN status_encomenda as se ON e.id_status_encomenda = se.id_status_encomenda
+       WHERE r.id_motorista = ? AND e.id_status_encomenda = 1`, // Busca apenas pendentes (ID 1)
       [driverId]
     );
 
-    const routesPromises = (rows as any[]).map(async (row) => {
-      let decryptedCep: string | null = null;
-      try {
-        if (row.nr_cep) decryptedCep = decrypt(row.nr_cep);
-      } catch (e) { console.error(`Falha ao descriptografar CEP para encomenda ${row.nr_encomenda}:`, e); }
-
-      let decryptedNumero: string | null = null;
-      try {
-        if (row.nr_casa) decryptedNumero = decrypt(row.nr_casa);
-      } catch (e) { console.error(`Falha ao descriptografar número para encomenda ${row.nr_encomenda}:`, e); }
-      
-      let decryptedComplemento: string | null = null;
-      try {
-        if (row.ds_complemento) decryptedComplemento = decrypt(row.ds_complemento);
-      } catch (e) { console.error(`Falha ao descriptografar complemento para encomenda ${row.nr_encomenda}:`, e); }
-
-      const addressDetails = decryptedCep ? await getAddressFromCep(decryptedCep) : null;
-
+    const routes = (rows as any[]).map(row => {
+      // Monta o endereço a partir das colunas do banco
       const addressParts: string[] = [];
-      if (addressDetails?.logradouro) addressParts.push(addressDetails.logradouro);
-      if (decryptedNumero) addressParts.push(`Nº ${decryptedNumero}`);
-      if (decryptedComplemento) addressParts.push(decryptedComplemento);
-      if (addressDetails?.bairro) addressParts.push(addressDetails.bairro);
-      if (addressDetails?.localidade && addressDetails?.uf) addressParts.push(`${addressDetails.localidade} - ${addressDetails.uf}`);
+      if (row.nm_rua) addressParts.push(row.nm_rua);
+      if (row.nm_avenida) addressParts.push(row.nm_avenida);
+      if (row.nr_casa) addressParts.push(`Nº ${row.nr_casa}`);
+      if (row.ds_complemento) addressParts.push(row.ds_complemento);
+      if (row.nr_cep) addressParts.push(`CEP: ${row.nr_cep}`);
       
       let fullAddress = addressParts.join(', ');
-      if (!fullAddress && decryptedCep) {
-          fullAddress = `CEP: ${decryptedCep}`;
-      } else if (!fullAddress) {
+      if (!fullAddress) {
           fullAddress = 'Endereço indisponível';
       }
       
@@ -165,13 +80,11 @@ export async function GET(request: NextRequest) {
         title: `Encomenda #${row.nr_encomenda}`,
         description: `Cliente: ${row.nm_cliente}`,
         address: fullAddress,
-        status: 'pendente',
+        status: 'pendente', // Status fixo, pois a query filtra por pendentes
         time: formattedTime,
         read: false
       };
     });
-
-    const routes = await Promise.all(routesPromises);
     
     return NextResponse.json(routes);
 
@@ -198,5 +111,4 @@ export async function GET(request: NextRequest) {
       await connection.end();
     }
   }
-  */
 }

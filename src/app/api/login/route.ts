@@ -17,27 +17,6 @@ export async function POST(request: Request) {
     );
   }
 
-  // =======================================================================
-  // MODO DE TESTE: SIMULAÇÃO DE LOGIN SEM BANCO DE DADOS
-  // =======================================================================
-  // Para testar a interface, vamos simular um login se as credenciais forem corretas.
-  if (usuario === 'test' && senha === 'test') {
-    return NextResponse.json({ 
-        success: true, 
-        message: 'Login de teste bem-sucedido!', 
-        driverName: 'Motorista Teste',
-        driverId: '1',
-        driverPhotoUrl: 'https://picsum.photos/seed/123/100/100'
-    });
-  } else {
-     return NextResponse.json(
-        { success: false, message: 'Credenciais inválidas. Use "test" e "test" para entrar.' },
-        { status: 401 }
-      );
-  }
-
-  /*
-  // CÓDIGO ORIGINAL COM CONEXÃO AO BANCO DE DADOS (TEMPORARIAMENTE DESABILITADO)
   let connection;
   try {
     // =======================================================================
@@ -52,34 +31,40 @@ export async function POST(request: Request) {
       ssl: process.env.DB_SSL === 'true' ? { rejectUnauthorized: true } : undefined,
     });
 
-    // Atualiza a consulta para buscar também a URL da foto do motorista.
+    // Consulta para buscar o motorista pelo nome de usuário.
+    // O campo url_foto foi removido pois não existe no schema fornecido.
     const [rows] = await connection.execute(
-      'SELECT id_motorista, nm_usuario, nr_senha, nm_motorista, url_foto FROM tb_motorista WHERE nm_usuario = ?',
+      'SELECT id_motorista, nm_usuario, nr_senha, nm_motorista FROM tb_motorista WHERE nm_usuario = ?',
       [usuario]
     );
 
     if (Array.isArray(rows) && rows.length > 0) {
       const driver = (rows as any)[0];
       
+      // Verifica se a senha no banco parece estar hasheada (padrão bcrypt)
       const isHashed = driver.nr_senha.startsWith('$2');
       
       let senhaCorreta = false;
       if (isHashed) {
+        // Compara a senha fornecida com a senha hasheada do banco
         senhaCorreta = await bcrypt.compare(senha, driver.nr_senha);
       } else {
+        // Comparação de texto plano se a senha não estiver hasheada
         senhaCorreta = senha === driver.nr_senha;
       }
       
       if(senhaCorreta){
+        // Se a senha estiver correta, retorna sucesso com os dados do motorista.
         return NextResponse.json({ 
             success: true, 
             message: 'Login bem-sucedido!', 
             driverName: driver.nm_motorista,
             driverId: driver.id_motorista,
-            driverPhotoUrl: driver.url_foto // Retorna a URL da foto.
+            driverPhotoUrl: null // Retorna nulo, pois o campo não existe no banco.
         });
       }
       else{
+        // Se a senha estiver incorreta, retorna erro 401.
         return NextResponse.json(
           { success: false, message: 'Credenciais inválidas. Verifique seu usuário e senha.' },
           { status: 401 }
@@ -87,12 +72,14 @@ export async function POST(request: Request) {
       }
     }
     else{
+      // Se o usuário não for encontrado, retorna erro 404.
       return NextResponse.json(
         { success: false, message: 'Usuário não encontrado.' },
         { status: 404 }
       );
     }
   } catch (error: any) {
+    // Tratamento de erros de conexão e outros erros do servidor.
     console.error('[ERRO NA API DE LOGIN]:', error);
 
     if (error.code === 'ECONNREFUSED' || error.code === 'ENOTFOUND') {
@@ -113,14 +100,15 @@ export async function POST(request: Request) {
             { status: 500 }
         );
     }
+    // Erro genérico para outras falhas.
     return NextResponse.json(
       { success: false, message: 'Ocorreu um erro no servidor. Verifique o console da aplicação para mais detalhes.' },
       { status: 500 }
     );
   } finally {
+    // Garante que a conexão com o banco seja sempre fechada.
     if (connection) {
       await connection.end();
     }
   }
-  */
 }

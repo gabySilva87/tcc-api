@@ -1,3 +1,4 @@
+
 'use client';
 
 // Importa os hooks do React para gerenciar estado e ciclo de vida.
@@ -41,11 +42,11 @@ export default function DashboardPage() {
   useEffect(() => {
     // Busca os dados do motorista que foram salvos no `sessionStorage`.
     const name = sessionStorage.getItem('driverName');
-    const photoUrl = sessionStorage.getItem('driverPhotoUrl');
+    const photoUrl = sessionStorage.getItem('driverPhotoUrl'); // url_foto foi removido do banco.
     if (name) {
       setDriverName(name);
     }
-    if (photoUrl) {
+    if (photoUrl && photoUrl !== 'null') { // Verifica se a URL não é nula ou a string 'null'
       setDriverPhotoUrl(photoUrl);
     }
     // Define que o componente foi montado. Isso evita erros de hidratação.
@@ -60,8 +61,12 @@ export default function DashboardPage() {
             return;
         }
         try {
+            setLoading(true);
             const response = await fetch(`/api/routes?driverId=${driverId}`);
-            if (!response.ok) throw new Error('Falha ao carregar rotas.');
+            if (!response.ok) {
+              const errorData = await response.json();
+              throw new Error(errorData.message || 'Falha ao carregar rotas.');
+            }
             const data = await response.json();
             setPendingRoutes(data);
         } catch (err: any) {
@@ -84,7 +89,10 @@ export default function DashboardPage() {
   };
   
   const handleDeliveryFailure = (failedRoute: Route) => {
-    // No futuro, podemos adicionar lógica para lidar com falhas
+    // Move a rota para a aba de histórico com status 'falha'
+    setPendingRoutes(prev => prev.filter(r => r.id !== failedRoute.id));
+    const failedDelivery = { ...failedRoute, status: 'falha' as const };
+    setHistoryRoutes(prev => [failedDelivery, ...prev]);
   };
 
 
