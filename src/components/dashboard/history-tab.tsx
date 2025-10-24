@@ -1,65 +1,117 @@
-'use client';
 
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { useState } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { History, AlertCircle, CheckCircle, PackageSearch } from "lucide-react";
-import { Button } from "../ui/button";
-import type { Route } from './pending-tab';
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { RefreshCw, History } from 'lucide-react';
+import type { Route } from "./pending-tab";
+import { DeliveryDetailsModal } from './delivery-details-modal';
 
 interface HistoryTabProps {
-  historyItems: Route[];
+    historyItems: Route[];
+    onRetry: (route: Route) => void;
 }
 
-export default function HistoryTab({ historyItems }: HistoryTabProps) {
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <History className="w-6 h-6 text-primary" />
-          Histórico do Dia
-        </CardTitle>
-        <CardDescription>
-          Todas as entregas finalizadas hoje (sucessos e falhas).
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        {historyItems.length > 0 ? (
-          <ScrollArea className="h-[calc(100vh-22rem)] md:h-[400px]">
-            <ul className="space-y-4">
-              {historyItems.map((item) => (
-                <li key={item.id} className="p-4 bg-muted/50 rounded-lg">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="font-semibold">{item.title}</p>
-                      <p className="text-sm text-muted-foreground">{item.description}</p>
+// Componente corrigido para usar 'Nentregue' e 'clientName'
+const HistoryTab: React.FC<HistoryTabProps> = ({ historyItems, onRetry }) => {
+    const [showRetryDialog, setShowRetryDialog] = useState(false);
+    const [showDetailsModal, setShowDetailsModal] = useState(false);
+    const [selectedRoute, setSelectedRoute] = useState<Route | null>(null);
+
+    const handleRetryClick = (route: Route) => {
+        setSelectedRoute(route);
+        setShowRetryDialog(true);
+    };
+
+    const handleDetailsClick = (route: Route) => {
+        setSelectedRoute(route);
+        setShowDetailsModal(true);
+    };
+
+    const handleConfirmRetry = () => {
+        if (selectedRoute) {
+            onRetry(selectedRoute);
+        }
+        setShowRetryDialog(false);
+        setSelectedRoute(null);
+    };
+
+    if (historyItems.length === 0) {
+        return (
+            <div className="text-center text-muted-foreground mt-12 flex flex-col items-center gap-4">
+                <History className="w-16 h-16 text-muted-foreground/50" />
+                <h3 className="text-lg font-semibold">Nenhum histórico hoje</h3>
+                <p className="text-sm">As entregas que você finalizar aparecerão aqui.</p>
+            </div>
+        );
+    }
+
+    return (
+        <>
+            <Card>
+                <CardHeader>
+                    <CardTitle>Histórico do Dia</CardTitle>
+                    <p className="text-sm text-muted-foreground">Lista de todas as entregas finalizadas hoje (sucessos e falhas).</p>
+                </CardHeader>
+                <CardContent>
+                    <div className="space-y-4">
+                        {historyItems.map((item) => (
+                            <div key={item.id} className="flex items-center justify-between p-4 bg-secondary/50 rounded-lg shadow-sm cursor-pointer hover:bg-secondary transition-colors" onClick={() => handleDetailsClick(item)}>
+                                <p className="font-semibold text-foreground">{item.clientName || `Entrega #${item.id}`}</p>
+                                <div className="flex items-center gap-4">
+                                    <Badge variant={item.status === 'entregue' ? 'success' : 'destructive'}>
+                                        {item.status === 'entregue' ? 'Entregue' : 'Não Entregue'} 
+                                    </Badge>
+                                    {item.status === 'Nentregue' && ( // CORREÇÃO: Verifica por 'Nentregue'
+                                        <Button 
+                                            variant="outline"
+                                            size="sm"
+                                            onClick={(e) => { e.stopPropagation(); handleRetryClick(item); }} 
+                                            className="flex items-center gap-2 text-primary hover:text-primary"
+                                        >
+                                            <RefreshCw className="h-4 w-4" />
+                                            Tentar Novamente
+                                        </Button>
+                                    )}
+                                </div>
+                            </div>
+                        ))}
                     </div>
-                    <div className="flex items-center gap-4">
-                       <Badge variant={item.status === 'entregue' ? 'success' : 'destructive'}>
-                         {item.status === 'entregue' ? <CheckCircle className="w-3 h-3 mr-1"/> : <AlertCircle className="w-3 h-3 mr-1"/>}
-                         {item.status}
-                       </Badge>
-                       {item.status === 'falha' && (
-                         <Button variant="secondary" size="sm">Tentar Novamente</Button>
-                       )}
-                    </div>
-                  </div>
-                </li>
-              ))}
-            </ul>
-          </ScrollArea>
-        ) : (
-          <div className="border-2 border-dashed rounded-lg p-6 text-center bg-muted/20 min-h-[300px] flex flex-col justify-center items-center">
-              <PackageSearch className="w-12 h-12 text-muted-foreground mb-4" />
-              <p className="text-lg font-medium text-muted-foreground">
-                  O histórico de hoje está vazio.
-              </p>
-              <p className="text-sm text-muted-foreground/80 mt-2">
-                  Quando você finalizar uma entrega, ela aparecerá aqui.
-              </p>
-          </div>
-        )}
-      </CardContent>
-    </Card>
-  );
-}
+                </CardContent>
+            </Card>
+
+            <AlertDialog open={showRetryDialog} onOpenChange={setShowRetryDialog}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Confirmar Nova Tentativa</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            Tem certeza de que deseja mover a entrega para "{selectedRoute?.clientName}" de volta para a lista de pendentes?
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel onClick={() => setSelectedRoute(null)}>Cancelar</AlertDialogCancel>
+                        <AlertDialogAction onClick={handleConfirmRetry}>Confirmar</AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
+
+            <DeliveryDetailsModal 
+                isOpen={showDetailsModal}
+                onClose={() => setShowDetailsModal(false)}
+                delivery={selectedRoute}
+            />
+        </>
+    );
+};
+
+export default HistoryTab;

@@ -111,7 +111,7 @@ export function LoginForm() {
           <div className="w-[120px] h-[120px] md:w-[150px] md:h-[150px] relative">
             {/* Componente `Image` otimizado do Next.js para a logo. */}
             <Image
-              src="/LogiDesk.Logo.png"
+              src="/logo.png"
               alt="LogiDesk Logo"
               fill
               className="object-contain"

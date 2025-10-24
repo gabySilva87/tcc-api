@@ -20,7 +20,6 @@ export async function POST(request: Request) {
     // Conecta ao banco de dados.
     connection = await mysql.createConnection({
       host: process.env.DB_HOST,
-      port: 3307,
       user: process.env.DB_USER,
       password: process.env.DB_PASSWORD,
       database: process.env.DB_DATABASE,
@@ -34,7 +33,7 @@ export async function POST(request: Request) {
     // PASSO 1: INSERIR O ENDEREÇO
     // =======================================================================
     const [enderecoResult] = await connection.execute(
-      'INSERT INTO endereco (nr_cep, nr_casa, nm_rua, nm_avenida, ds_complemento) VALUES (?, ?, ?, ?, ?)',
+      'INSERT INTO tb_endereco (nr_cep, nr_casa, nm_rua, nm_avenida, ds_complemento) VALUES (?, ?, ?, ?, ?)',
       [endereco.nr_cep, endereco.nr_casa, endereco.nm_rua, endereco.nm_avenida || null, endereco.ds_complemento || null]
     );
 
@@ -46,9 +45,8 @@ export async function POST(request: Request) {
     // =======================================================================
     // PASSO 2: INSERIR A ENCOMENDA
     // =======================================================================
-    // O id_status_encomenda é definido como 1 (pendente) por padrão.
     const [encomendaResult] = await connection.execute(
-      'INSERT INTO encomenda (nr_encomenda, nm_cliente, nr_contato_cliente, id_endereco, id_status_encomenda, dt_cadastro) VALUES (?, ?, ?, ?, 1, NOW())',
+      'INSERT INTO tb_encomenda (nr_encomenda, nm_cliente, cd_contato_cliente, id_endereco, nm_status_encomenda, created_at) VALUES (?, ?, ?, ?, \'Pendente\', NOW())',
       [nr_encomenda, nm_cliente, cd_contato_cliente, enderecoId]
     );
     
@@ -78,7 +76,7 @@ export async function POST(request: Request) {
     } else if (error.code === 'ECONNREFUSED') {
         errorMessage = 'Não foi possível conectar ao banco de dados. Verifique se o servidor MySQL está rodando e se a porta está correta.';
     } else if (error.code === 'ER_BAD_DB_ERROR') {
-        errorMessage = `O banco de dados '${process.env.DB_DATABASE}' não foi encontrado. Verifique se o nome está correto no .env.`;
+        errorMessage = `O banco de dados \'${process.env.DB_DATABASE}\' não foi encontrado. Verifique se o nome está correto no .env.`;
     }
 
     // Retorna uma mensagem de erro genérica.

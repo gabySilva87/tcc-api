@@ -1,18 +1,13 @@
-
 'use client';
 
-// Importa os hooks do React para gerenciar estado e ciclo de vida.
-import { useState, useEffect } from "react";
-// Importa componentes de UI da biblioteca ShadCN.
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
-// Importa ícones da biblioteca lucide-react.
 import { Map, CheckCheck, History } from "lucide-react";
-// Importa o componente de imagem otimizada do Next.js.
 import Image from "next/image";
+import { useToast } from "@/hooks/use-toast";
 
-// Importa componentes customizados da aplicação.
 import { LogoutButton } from "@/components/logout-button";
 import PendingTab from "@/components/dashboard/pending-tab";
 import DeliveredTab from "@/components/dashboard/delivered-tab";
@@ -20,100 +15,136 @@ import ProfileTab from "@/components/dashboard/profile-tab";
 import HistoryTab from "@/components/dashboard/history-tab";
 import type { Route } from "@/components/dashboard/pending-tab";
 
-// Componente principal da página da dashboard.
 export default function DashboardPage() {
-  // Define estados para armazenar os dados do motorista.
+  const { toast } = useToast();
   const [driverName, setDriverName] = useState('');
   const [driverPhotoUrl, setDriverPhotoUrl] = useState('');
-  // Define o estado da aba ativa. 'pending' é o valor inicial.
   const [activeTab, setActiveTab] = useState('pending');
-  // Estado para verificar se o componente já foi montado no cliente.
   const [isMounted, setIsMounted] = useState(false);
 
-  // Estados para gerenciar as listas de entregas
   const [pendingRoutes, setPendingRoutes] = useState<Route[]>([]);
-  const [deliveredRoutes, setDeliveredRoutes] = useState<Route[]>([]);
   const [historyRoutes, setHistoryRoutes] = useState<Route[]>([]);
   
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // `useEffect` para executar código do lado do cliente após a montagem inicial.
+  const deliveredRoutes = useMemo(() => 
+    historyRoutes.filter(r => r.status === 'entregue'), 
+    [historyRoutes]
+  );
+
+  const fetchInitialData = useCallback(async () => {
+    const driverId = sessionStorage.getItem('driverId');
+    if (!driverId) {
+        setError('ID do motorista não encontrado. Faça login novamente.');
+        setLoading(false);
+        return;
+    }
+    try {
+        setLoading(true);
+        const [routesRes, historyRes] = await Promise.all([
+            fetch(`/api/routes?driverId=${driverId}`),
+            fetch(`/api/history?driverId=${driverId}`)
+        ]);
+
+        if (!routesRes.ok) {
+          const errorData = await routesRes.json();
+          throw new Error(errorData.message || 'Falha ao carregar as rotas pendentes.');
+        }
+         if (!historyRes.ok) {
+          const errorData = await historyRes.json();
+          throw new Error(errorData.message || 'Falha ao carregar o histórico.');
+        }
+
+        const pendingData = await routesRes.json();
+        const historyData = await historyRes.json();
+
+        setPendingRoutes(pendingData);
+        setHistoryRoutes(historyData);
+
+    } catch (err: any) {
+        setError(err.message);
+        toast({ variant: 'destructive', title: 'Erro ao Carregar Dados', description: err.message });
+    } finally {
+        setLoading(false);
+    }
+  }, [toast]);
+
   useEffect(() => {
-    // Busca os dados do motorista que foram salvos no `sessionStorage`.
     const name = sessionStorage.getItem('driverName');
-    const photoUrl = sessionStorage.getItem('driverPhotoUrl'); // url_foto foi removido do banco.
-    if (name) {
-      setDriverName(name);
-    }
-    if (photoUrl && photoUrl !== 'null') { // Verifica se a URL não é nula ou a string 'null'
-      setDriverPhotoUrl(photoUrl);
-    }
-    // Define que o componente foi montado. Isso evita erros de hidratação.
+    const photoUrl = sessionStorage.getItem('driverPhotoUrl');
+    if (name) setDriverName(name);
+    if (photoUrl && photoUrl !== 'null') setDriverPhotoUrl(photoUrl);
     setIsMounted(true);
     
-    // Busca as rotas pendentes
-    const fetchInitialRoutes = async () => {
-        const driverId = sessionStorage.getItem('driverId');
-        if (!driverId) {
-            setError('ID do motorista não encontrado.');
-            setLoading(false);
-            return;
-        }
-        try {
-            setLoading(true);
-            const response = await fetch(`/api/routes?driverId=${driverId}`);
-            if (!response.ok) {
-              const errorData = await response.json();
-              throw new Error(errorData.message || 'Falha ao carregar rotas.');
-            }
-            const data = await response.json();
-            setPendingRoutes(data);
-        } catch (err: any) {
-            setError(err.message);
-        } finally {
-            setLoading(false);
-        }
-    };
+    fetchInitialData();
+  }, [fetchInitialData]);
 
-    fetchInitialRoutes();
-
-  }, []);
-
-  const handleDeliverySuccess = (completedRoute: Route) => {
+  const handleDeliverySuccess = useCallback((completedRoute: Route) => {
     setPendingRoutes(prev => prev.filter(r => r.id !== completedRoute.id));
-    
-    const successfulRoute = { ...completedRoute, status: 'entregue' };
-    setDeliveredRoutes(prev => [successfulRoute, ...prev]);
+    const successfulRoute = { ...completedRoute, status: 'entregue' as const };
     setHistoryRoutes(prev => [successfulRoute, ...prev]);
-  };
+  }, []);
   
-  const handleDeliveryFailure = (failedRoute: Route) => {
-    // Move a rota para a aba de histórico com status 'falha'
+  const handleDeliveryFailure = useCallback((failedRoute: Route) => {
     setPendingRoutes(prev => prev.filter(r => r.id !== failedRoute.id));
     const failedDelivery = { ...failedRoute, status: 'falha' as const };
     setHistoryRoutes(prev => [failedDelivery, ...prev]);
-  };
+    setActiveTab('history'); // Muda para a aba de histórico
+  }, []);
 
+  const handleRetry = useCallback(async (retriedRoute: Route) => {
+    setHistoryRoutes(prev => prev.filter(r => r.id !== retriedRoute.id));
+
+    try {
+        const driverId = sessionStorage.getItem('driverId');
+        const response = await fetch(`/api/encomendas/update-status`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ encomendaId: retriedRoute.id, status: 'Transito', driverId }),
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            setHistoryRoutes(prev => [retriedRoute, ...prev]); 
+            throw new Error(errorData.message || 'Falha ao reiniciar a entrega.');
+        }
+        
+        const routeToRetry = { ...retriedRoute, status: 'transito' as const };
+
+        setPendingRoutes(prev => {
+            if (prev.some(r => r.id === routeToRetry.id)) return prev;
+            return [routeToRetry, ...prev];
+        });
+
+        toast({ title: 'Entrega Reiniciada', description: `A encomenda #${retriedRoute.id} voltou para a lista de pendentes.` });
+        setActiveTab('pending');
+
+    } catch (error: any) {
+        toast({ variant: 'destructive', title: 'Erro!', description: error.message });
+    }
+  }, [toast]);
 
   const renderContent = () => {
-    // Se o componente ainda não foi montado, exibe um esqueleto de UI para evitar erro de hidratação.
     if (!isMounted || loading) {
       return (
-        <div className="space-y-8">
-            <Skeleton className="h-10 w-3/4" />
+        <div className="space-y-8 mt-8">
+            <div className="flex items-center gap-4">
+                <Skeleton className="h-12 w-1/4" />
+                <Skeleton className="h-8 w-3/4" />
+            </div>
             <Skeleton className="h-12 w-full" />
-            <Skeleton className="h-[500px] w-full" />
+            <div className="grid gap-8 md:grid-cols-1 lg:grid-cols-3">
+                <Skeleton className="h-[500px] w-full lg:col-span-1" />
+                <Skeleton className="h-[500px] w-full lg:col-span-2 hidden md:block" />
+            </div>
         </div>
       );
     }
-
-    // Se a aba de perfil está ativa, renderiza o componente do perfil.
     if (activeTab === 'profile') {
         return <ProfileTab driverName={driverName} driverPhotoUrl={driverPhotoUrl} onBack={() => setActiveTab('pending')} />;
     }
 
-    // Caso contrário, renderiza a visualização principal com as abas.
     return (
       <>
         <div className="mb-8">
@@ -123,18 +154,9 @@ export default function DashboardPage() {
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="grid w-full grid-cols-3 bg-muted/50 p-1 h-auto">
-            <TabsTrigger value="pending" className="py-2.5 text-sm">
-              <Map className="w-4 h-4 mr-2"/>
-              Pendentes
-            </TabsTrigger>
-            <TabsTrigger value="delivered" className="py-2.5 text-sm">
-              <CheckCheck className="w-4 h-4 mr-2"/>
-              Entregues
-            </TabsTrigger>
-             <TabsTrigger value="history" className="py-2.5 text-sm">
-              <History className="w-4 h-4 mr-2"/>
-              Histórico
-            </TabsTrigger>
+            <TabsTrigger value="pending" className="py-2.5 text-sm"><Map className="w-4 h-4 mr-2"/>Em Trânsito</TabsTrigger>
+            <TabsTrigger value="delivered" className="py-2.5 text-sm"><CheckCheck className="w-4 h-4 mr-2"/>Entregues</TabsTrigger>
+            <TabsTrigger value="history" className="py-2.5 text-sm"><History className="w-4 h-4 mr-2"/>Histórico</TabsTrigger>
           </TabsList>
           
           <TabsContent value="pending" className="mt-6">
@@ -143,7 +165,7 @@ export default function DashboardPage() {
                 loading={loading}
                 error={error}
                 onDeliverySuccess={handleDeliverySuccess}
-                onDeliveryFailure={handleDeliveryFailure}
+                onDeliveryFailure={handleDeliveryFailure} // <- Propriedade adicionada
                 setRoutes={setPendingRoutes}
             />
           </TabsContent>
@@ -151,37 +173,28 @@ export default function DashboardPage() {
             <DeliveredTab deliveredRoutes={deliveredRoutes} />
           </TabsContent>
           <TabsContent value="history" className="mt-6">
-            <HistoryTab historyItems={historyRoutes} />
+            <HistoryTab historyItems={historyRoutes} onRetry={handleRetry} />
           </TabsContent>
         </Tabs>
       </>
     );
   }
 
-  // =======================================================================
-  // INÍCIO DO JSX DO COMPONENTE
-  // =======================================================================
   return (
     <div className="flex flex-col min-h-screen bg-secondary/50">
-      {/* Cabeçalho fixo da página. */}
       <header className="bg-card border-b sticky top-0 z-10">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center gap-2">
                <div className="w-10 h-10 relative">
-                <Image
-                  src="/LogiDesk.Logo.png"
-                  alt="LogiDesk Logo"
-                  fill
-                  className="object-contain"
-                />
+                <Image src="/logo.png" alt="LogiDesk Logo" fill className="object-contain" />
               </div>
               <h1 className="text-xl font-bold text-foreground">LogiDesk</h1>
             </div>
             <div className="flex items-center gap-3">
                <button onClick={() => setActiveTab('profile')} className="rounded-full focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2">
                 <Avatar>
-                  <AvatarImage src={driverPhotoUrl} alt={driverName} data-ai-hint="driver portrait" />
+                  <AvatarImage src={driverPhotoUrl} alt={driverName} />
                   <AvatarFallback>{driverName ? driverName.charAt(0) : 'M'}</AvatarFallback>
                 </Avatar>
                </button>
@@ -192,7 +205,6 @@ export default function DashboardPage() {
         </div>
       </header>
 
-      {/* Conteúdo principal da página. */}
       <main className="container mx-auto p-4 sm:p-6 lg:p-8 flex-1">
         {renderContent()}
       </main>
