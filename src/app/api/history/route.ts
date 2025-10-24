@@ -3,7 +3,7 @@ import mysql from 'mysql2/promise';
 
 const statusFrontendMap: { [key: string]: string } = {
   'Entregue': 'entregue',
-  'Falha': 'falha',
+  'NEntregue': 'nentregue',
 };
 
 export async function GET(request: NextRequest) {

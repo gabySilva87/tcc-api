@@ -34,7 +34,7 @@ export default function ReportProblemPage() {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             encomendaId: deliveryId,
-            status: 'Não entregue', // <-- Valor salvo no banco de dados
+            status: 'Nentregue', // <-- Valor salvo no banco de dados
             problem: description,
             driverId: driverId,
           }),
