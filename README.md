@@ -1,4 +1,13 @@
-npm install npm audit fix npm run dev Para usar npm start sem erros: npm run build npm start fazer uma .env.local
+# Clone o repositório
+git clone https://github.com/gabySilva87/tcc-api.git
+
+# Acesse a pasta do projeto
+cd tcc-api
+
+# Vá para a branch desejada
+git checkout api-camera
+npm install npm audit fix npm run dev Para usar npm start sem erros: npm run build npm start 
+# fazer uma .env.local
 DB_HOST=localhost
 DB_PORT=3307
 DB_DATABASE=db_transportadora
