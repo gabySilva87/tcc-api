@@ -33,10 +33,10 @@ export async function POST(request: Request) {
     
     let totalAffectedRows = 0;
 
-    if (normalizedStatus === 'em trânsito') {
+    if (normalizedStatus === 'Transito') {
       const [encomendaResult]: any = await connection.execute(
         'UPDATE tb_encomenda SET nm_status_encomenda = ? WHERE id_encomenda = ?',
-        ['Em trânsito', encomendaId]
+        ['Transito', encomendaId]
       );
       const [roteiroResult]: any = await connection.execute(
         'UPDATE tb_roteiro SET nm_status = ? WHERE id_roteiro = ?',
