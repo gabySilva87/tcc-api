@@ -1,25 +1,24 @@
-
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Button } from '@/components/ui/button';
-import { AlertTriangle, MapPin, Truck, RefreshCw, PackageCheck, AlertCircle } from "lucide-react";
+import { AlertTriangle, MapPin, Truck, RefreshCw, PackageCheck, AlertCircle, Package, Route as RouteIcon } from "lucide-react"; // Ícone de Rota adicionado
 import { Skeleton } from "@/components/ui/skeleton";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from '@/hooks/use-toast';
 import { ReportProblemModal } from './report-problem-modal';
 
-// A interface da rota não muda
 export interface Route {
-  id: string | number;
+  id: number; 
+  encomendaId: number; 
   title: string;
-  description: string;
+  productName: string; 
   address: string;
-  status: 'pendente' | 'entregue' | 'Nentregue' | 'transito';
-  time: string;
+  status: string;
   clientName: string;
+  deliveryDate?: string;
 }
 
 interface PendingTabProps {
@@ -58,36 +57,55 @@ export default function PendingTab({ routes, loading, error, onDeliverySuccess, 
     }
   }, [setRoutes, toast]);
 
-  const handleUpdateStatus = async (routeId: string | number, status: 'Entregue') => {
+  // Função genérica para atualizar o status
+  const updateDeliveryStatus = async (route: Route, status: string) => {
     setIsUpdating(true);
     const driverId = sessionStorage.getItem('driverId');
     try {
       const response = await fetch(`/api/encomendas/update-status`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ encomendaId: routeId, status, driverId }),
+        body: JSON.stringify({ roteiroId: route.id, encomendaId: route.encomendaId, status, driverId }),
       });
-      if (!response.ok) throw new Error('Falha ao marcar como entregue.');
-
-      const updatedRoute = routes.find(r => r.id === routeId);
-      if (updatedRoute) onDeliverySuccess(updatedRoute);
-
-      toast({ title: "Sucesso!", description: "Encomenda marcada como entregue." });
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || `Falha ao atualizar para ${status}.`);
+      }
+      return true;
     } catch (err: any) {
       toast({ variant: "destructive", title: "Erro na Ação", description: err.message });
+      return false;
     } finally {
       setIsUpdating(false);
     }
   };
-  
-  const handleOpenModal = () => {
-    if (selectedRoute) setIsModalOpen(true);
+
+  const handleStartRoute = async (route: Route) => {
+    const success = await updateDeliveryStatus(route, 'Em trânsito');
+    if (success) {
+      // Atualiza o estado local para refletir a mudança imediatamente
+      const updatedRoutes = routes.map(r => r.id === route.id ? { ...r, status: 'Em trânsito' } : r);
+      setRoutes(updatedRoutes);
+      setSelectedRoute({ ...route, status: 'Em trânsito' }); // Garante que a rota selecionada também seja atualizada
+      toast({ title: "Rota Iniciada!", description: "O status da encomenda foi atualizado para Em trânsito." });
+      
+      // Abre o Google Maps em uma nova aba
+      const googleMapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(route.address)}`;
+      window.open(googleMapsUrl, '_blank');
+    }
   };
 
-  const handleReportConfirm = () => {
-    if (selectedRoute) {
-      onDeliveryFailure(selectedRoute); 
+  const handleMarkAsDelivered = async (route: Route) => {
+    const success = await updateDeliveryStatus(route, 'Entregue');
+    if (success) {
+      onDeliverySuccess(route);
+      toast({ title: "Sucesso!", description: "Encomenda marcada como entregue." });
     }
+  };
+  
+  const handleProblemReportSuccess = () => {
+    if (!selectedRoute) return;
+    onDeliveryFailure(selectedRoute);
   };
 
   if (loading) {
@@ -114,7 +132,6 @@ export default function PendingTab({ routes, loading, error, onDeliverySuccess, 
   return (
     <>
       <div className="grid gap-8 md:grid-cols-1 lg:grid-cols-3">
-        {/* Coluna da Lista de Entregas */}
         <div className="lg:col-span-1">
           <Card className="flex-1 flex flex-col h-full">
             <CardHeader>
@@ -129,6 +146,7 @@ export default function PendingTab({ routes, loading, error, onDeliverySuccess, 
                         <div className="flex gap-4 items-start">
                           <div className="flex-1">
                             <p className="font-semibold">{route.clientName}</p>
+                            <p className="text-sm text-muted-foreground font-medium">{route.productName}</p>
                             <p className="text-sm text-muted-foreground truncate">{route.address}</p>
                           </div>
                           <MapPin className="w-5 h-5 text-muted-foreground flex-shrink-0 mt-1" />
@@ -150,32 +168,47 @@ export default function PendingTab({ routes, loading, error, onDeliverySuccess, 
           </Card>
         </div>
 
-        {/* Coluna de Detalhes da Entrega - COM A SINTAXE CORRIGIDA */}
         <div className="lg:col-span-2">
           {selectedRoute ? (
             <Card>
-              <CardHeader>
-                  <CardTitle>{selectedRoute.clientName}</CardTitle>
-                  <p className="text-sm text-muted-foreground">ID da Entrega: #{String(selectedRoute.id)}</p>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between text-sm p-3 bg-muted/50 rounded-lg">
-                    <strong className="text-muted-foreground">Endereço:</strong>
-                    <span className="text-right font-medium">{selectedRoute.address}</span>
-                  </div>
-                </div>
-                <div className="grid grid-cols-2 gap-4 mt-6">
-                  <Button onClick={handleOpenModal} className="w-full text-lg py-6 bg-amber-500 hover:bg-amber-600 text-white flex items-center justify-center" disabled={isUpdating}>
-                    <AlertCircle className="w-5 h-5 mr-2" />
-                    Reportar Problema
-                  </Button>
-                  <Button onClick={() => handleUpdateStatus(selectedRoute.id, 'Entregue')} className="w-full text-lg py-6 bg-green-600 hover:bg-green-700 text-white flex items-center justify-center" disabled={isUpdating}>
-                    {isUpdating ? <RefreshCw className="w-5 h-5 mr-2 animate-spin" /> : <PackageCheck className="w-5 h-5 mr-2" />}
-                    {isUpdating ? 'Atualizando...' : 'Marcar como Entregue'}
-                  </Button>
-                </div>
-              </CardContent>
+                <CardHeader>
+                    <CardTitle>{selectedRoute.clientName}</CardTitle>
+                    <p className="text-sm text-muted-foreground">Nº da Encomenda: {selectedRoute.title}</p>
+                </CardHeader>
+                <CardContent>
+                    <div className="space-y-4">
+                        <div className="flex items-center justify-between text-sm p-3 bg-muted/50 rounded-lg">
+                            <strong className="text-muted-foreground flex items-center gap-2"><Package className="w-4 h-4"/>Produto:</strong>
+                            <span className="text-right font-medium">{selectedRoute.productName}</span>
+                        </div>
+                        <div className="flex items-center justify-between text-sm p-3 bg-muted/50 rounded-lg">
+                            <strong className="text-muted-foreground">Endereço:</strong>
+                            <span className="text-right font-medium">{selectedRoute.address}</span>
+                        </div>
+                    </div>
+                    
+                    <div className="mt-6">
+                        {selectedRoute.status === 'Transito' ? (
+                            // CORREÇÃO: Cor do botão alterada para a cor primária do tema.
+                            <Button onClick={() => handleStartRoute(selectedRoute)} className="w-full text-lg py-6 bg-primary hover:bg-primary/90 text-primary-foreground flex items-center justify-center" disabled={isUpdating}>
+                                <RouteIcon className="w-5 h-5 mr-2" />
+                                {isUpdating ? 'Iniciando...' : 'Iniciar Rota'}
+                            </Button>
+                        ) : (
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <Button onClick={() => setIsModalOpen(true)} className="w-full text-lg py-6 bg-amber-500 hover:bg-amber-600 text-white flex items-center justify-center" disabled={isUpdating}>
+                                    <AlertCircle className="w-5 h-5 mr-2" />
+                                    Reportar Problema
+                                </Button>
+                                 {/* CORREÇÃO: Cor do botão alterada para a cor primária do tema para consistência. */}
+                                <Button onClick={() => handleMarkAsDelivered(selectedRoute)} className="w-full text-lg py-6 bg-primary hover:bg-primary/90 text-primary-foreground flex items-center justify-center" disabled={isUpdating}>
+                                    {isUpdating ? <RefreshCw className="w-5 h-5 mr-2 animate-spin" /> : <PackageCheck className="w-5 h-5 mr-2" />}
+                                    {isUpdating ? 'Atualizando...' : 'Marcar como Entregue'}
+                                </Button>
+                            </div>
+                        )}
+                    </div>
+                </CardContent>
             </Card>
           ) : (
             routes.length > 0 ? (
@@ -191,12 +224,14 @@ export default function PendingTab({ routes, loading, error, onDeliverySuccess, 
         </div>
       </div>
       
-      <ReportProblemModal 
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        route={selectedRoute}
-        onSuccess={handleReportConfirm} 
-      />
+      {selectedRoute && (
+        <ReportProblemModal 
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          route={selectedRoute}
+          onSuccess={handleProblemReportSuccess}
+        />
+      )}
     </>
   );
 }
