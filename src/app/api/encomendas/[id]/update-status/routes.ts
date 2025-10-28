@@ -39,12 +39,12 @@ export async function POST(request: Request) {
         ['Transito', encomendaId]
       );
       const [roteiroResult]: any = await connection.execute(
-        'UPDATE tb_roteiro SET nm_status = ? WHERE id_roteiro = ?',
-        ['Em trânsito', roteiroId]
+        'UPDATE tb_roteiro_entrega SET nm_status = ? WHERE id_roteiro = ?',
+        ['Transito', roteiroId]
       );
       // PASSO 3: Logar o resultado do UPDATE.
       console.log(`🧾 [API update-status] Linhas atualizadas em tb_encomenda: ${encomendaResult.affectedRows}`);
-      console.log(`🧾 [API update-status] Linhas atualizadas em tb_roteiro: ${roteiroResult.affectedRows}`);
+      console.log(`🧾 [API update-status] Linhas atualizadas em tb_roteiro_entrega: ${roteiroResult.affectedRows}`);
       totalAffectedRows = encomendaResult.affectedRows + roteiroResult.affectedRows;
 
     } else if (normalizedStatus === 'entregue') {
@@ -60,8 +60,8 @@ export async function POST(request: Request) {
       console.log(`🧾 [API update-status] Linhas atualizadas em tb_roteiro_entrega: ${roteiroResult.affectedRows}`);
       totalAffectedRows = encomendaResult.affectedRows + roteiroResult.affectedRows;
 
-    } else if (normalizedStatus === 'não entregue') {
-      historyLogStatus = `Não Entregue: ${problemDetails || 'Motivo não especificado'}`;
+    } else if (normalizedStatus === 'nentregue') {
+      historyLogStatus = `NEntregue: ${problemDetails || 'Motivo não especificado'}`;
       const [encomendaResult]: any = await connection.execute(
           'UPDATE tb_encomenda SET nm_status_encomenda = ? WHERE id_encomenda = ?',
           ['NEntregue', encomendaId]

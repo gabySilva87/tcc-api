@@ -99,7 +99,7 @@ export default function DashboardPage() {
             body: JSON.stringify({ 
               encomendaId: retriedRoute.encomendaId,
               roteiroId: retriedRoute.id, // Adicionado roteiroId que estava faltando
-              status: 'Em trânsito', 
+              status: 'Transito', 
               driverId 
             }),
         });

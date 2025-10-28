@@ -59,8 +59,8 @@ export function ReportProblemModal({ isOpen, onClose, route, onSuccess }: Report
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          encomendaId: route.id,
-          status: 'Nentregue', // <<< CORRIGIDO AQUI!
+          encomendaId: route.encomendaId,
+          status: 'NEntregue', // <<< CORRIGIDO AQUI!
           problem: description || 'Motivo não especificado.',
           driverId: driverId,
         }),

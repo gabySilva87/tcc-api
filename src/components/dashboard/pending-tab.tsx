@@ -81,12 +81,12 @@ export default function PendingTab({ routes, loading, error, onDeliverySuccess, 
   };
 
   const handleStartRoute = async (route: Route) => {
-    const success = await updateDeliveryStatus(route, 'Em trânsito');
+    const success = await updateDeliveryStatus(route, 'Transito');
     if (success) {
       // Atualiza o estado local para refletir a mudança imediatamente
       const updatedRoutes = routes.map(r => r.id === route.id ? { ...r, status: 'Em trânsito' } : r);
       setRoutes(updatedRoutes);
-      setSelectedRoute({ ...route, status: 'Em trânsito' }); // Garante que a rota selecionada também seja atualizada
+      setSelectedRoute({ ...route, status:'Em trânsito' }); // Garante que a rota selecionada também seja atualizada
       toast({ title: "Rota Iniciada!", description: "O status da encomenda foi atualizado para Em trânsito." });
       
       // Abre o Google Maps em uma nova aba
