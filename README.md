@@ -1,6 +1,6 @@
 # Clone o repositório
 git clone https://github.com/gabySilva87/tcc-api.git
-
+git clone -b <branch-name> <repository-url>
 # Acesse a pasta do projeto
 cd tcc-api
 
