@@ -142,7 +142,7 @@ export default function PendingTab({ routes, loading, error, onDeliverySuccess, 
                 <ScrollArea className="h-[calc(100vh-22rem)] md:h-[400px]">
                   <ul className="space-y-0">
                     {routes.map((route, index) => (
-                      <li key={route.id} onClick={() => setSelectedRoute(route)} className={`cursor-pointer p-4 hover:bg-muted/50 transition-colors ${selectedRoute?.id === route.id ? 'bg-muted' : ''}`}>
+                      <li key= {`${route.id}-${index}`} onClick={() => setSelectedRoute(route)} className={`cursor-pointer p-4 hover:bg-muted/50 transition-colors ${selectedRoute?.id === route.id ? 'bg-muted' : ''}`}>
                         <div className="flex gap-4 items-start">
                           <div className="flex-1">
                             <p className="font-semibold">{route.clientName}</p>
