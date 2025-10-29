@@ -141,37 +141,36 @@ export default function DashboardPage() {
     }
 
     return (
-      <>
-        <div className="mb-8">
-          <h2 className="text-3xl font-bold tracking-tight text-foreground">Bem-vindo, {driverName || 'Motorista'}!</h2>
-          <p className="text-muted-foreground">Aqui estão suas atualizações mais recentes.</p>
+      <div className="grid gap-8 lg:grid-cols-3">
+        <div className="lg:col-span-3 space-y-6">
+          <div className="mb-8">
+            <h2 className="text-3xl font-bold tracking-tight text-foreground">Bem-vindo, {driverName || 'Motorista'}!</h2>
+            <p className="text-muted-foreground">Aqui estão suas atualizações mais recentes.</p>
+          </div>
+
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+            <TabsList className="grid w-full grid-cols-2 bg-muted/50 p-1 h-auto">
+              <TabsTrigger value="pending" className="py-2.5 text-sm"><Map className="w-4 h-4 mr-2"/>Em Trânsito</TabsTrigger>
+              <TabsTrigger value="history" className="py-2.5 text-sm"><History className="w-4 h-4 mr-2"/>Histórico</TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="pending" className="mt-6">
+              <PendingTab 
+                  routes={pendingRoutes} 
+                  loading={loading}
+                  error={error}
+                  onDeliverySuccess={handleDeliverySuccess}
+                  onDeliveryFailure={handleDeliveryFailure}
+                  setRoutes={setPendingRoutes}
+              />
+            </TabsContent>
+            
+            <TabsContent value="history" className="mt-6">
+              <HistoryTab historyItems={historyRoutes} onRetry={handleRetry} />
+            </TabsContent>
+          </Tabs>
         </div>
-
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          {/* CORREÇÃO: A lista de abas foi simplificada para ter apenas duas colunas: Em Trânsito e Histórico */}
-          <TabsList className="grid w-full grid-cols-2 bg-muted/50 p-1 h-auto">
-            <TabsTrigger value="pending" className="py-2.5 text-sm"><Map className="w-4 h-4 mr-2"/>Em Trânsito</TabsTrigger>
-            <TabsTrigger value="history" className="py-2.5 text-sm"><History className="w-4 h-4 mr-2"/>Histórico</TabsTrigger>
-          </TabsList>
-          
-          <TabsContent value="pending" className="mt-6">
-            <PendingTab 
-                routes={pendingRoutes} 
-                loading={loading}
-                error={error}
-                onDeliverySuccess={handleDeliverySuccess}
-                onDeliveryFailure={handleDeliveryFailure}
-                setRoutes={setPendingRoutes}
-            />
-          </TabsContent>
-          
-          {/* A aba e o conteúdo de "Entregues" foram removidos para simplificar a interface */}
-
-          <TabsContent value="history" className="mt-6">
-            <HistoryTab historyItems={historyRoutes} onRetry={handleRetry} />
-          </TabsContent>
-        </Tabs>
-      </>
+      </div>
     );
   }
 
@@ -182,7 +181,7 @@ export default function DashboardPage() {
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center gap-2">
                <div className="w-10 h-10 relative">
-                <Image src="/logo.png" alt="LogiDesk Logo" fill sizes="2.5rem" className="object-contain" />
+           <Image src="/logo.png" alt="LogiDesk Logo" fill sizes="2.5rem" className="object-contain" />
               </div>
               <h1 className="text-xl font-bold text-foreground">LogiDesk</h1>
             </div>
