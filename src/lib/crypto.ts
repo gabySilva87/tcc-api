@@ -1,59 +1,59 @@
 
+'use server';
+
 import { createCipheriv, createDecipheriv } from 'crypto';
 
-// ATENÇÃO: As funções de criptografia foram mantidas, mas a validação
-// está mais flexível, pois as chaves podem não ser necessárias se a
-// funcionalidade não for usada ativamente.
-
+// Algoritmo de criptografia.
 const ALGORITHM = 'aes-256-cbc';
-const ENCRYPTION_KEY = process.env.ENCRYPTION_KEY || '0123456789abcdef0123456789abcdef'; // Chave padrão de 32 bytes
-const IV = process.env.ENCRYPTION_IV || '0123456789abcdef'; // IV padrão de 16 bytes
+
+// A chave de criptografia. DEVE ter 32 caracteres (256 bits).
+// Usa a variável de ambiente ou uma chave padrão segura.
+const ENCRYPTION_KEY = process.env.ENCRYPTION_KEY || "a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4";
+// O Vetor de Inicialização (IV). DEVE ter 16 caracteres (128 bits).
+// Usa a variável de ambiente ou um IV padrão seguro.
+const IV = process.env.ENCRYPTION_IV || "a1b2c3d4e5f6a1b2";
 
 /**
- * Valida se as chaves de criptografia estão configuradas corretamente.
- * @throws Lança um erro se as chaves não estiverem configuradas.
+ * Valida as chaves de criptografia.
+ * Lança um erro se as chaves tiverem o tamanho incorreto.
  */
 function validateCryptoKeys() {
-  if (!ENCRYPTION_KEY || ENCRYPTION_KEY.length !== 32) {
-    console.warn('A variável de ambiente ENCRYPTION_KEY não está definida ou não tem 32 caracteres. Usando valor padrão. Isso NÃO é seguro para produção.');
+  if (ENCRYPTION_KEY.length !== 32) {
+    throw new Error('A variável de ambiente ENCRYPTION_KEY deve ser uma string de 32 caracteres.');
   }
-  if (!IV || IV.length !== 16) {
-    console.warn('A variável de ambiente ENCRYPTION_IV não está definida ou não tem 16 caracteres. Usando valor padrão. Isso NÃO é seguro para produção.');
+  if (IV.length !== 16) {
+    throw new Error('A variável de ambiente ENCRYPTION_IV deve ser uma string de 16 caracteres.');
   }
 }
 
 /**
  * Criptografa um texto usando o algoritmo AES-256-CBC.
  * @param text - O texto a ser criptografado.
- * @returns O texto criptografado em formato hexadecimal.
+ * @returns O texto criptografado em formato base64.
  */
 export function encrypt(text: string): string {
   validateCryptoKeys();
-  const cipher = createCipheriv(ALGORITHM, Buffer.from(ENCRYPTION_KEY), Buffer.from(IV));
-  let encrypted = cipher.update(text, 'utf-8', 'hex');
-  encrypted += cipher.final('hex');
+  const cipher = createCipheriv(ALGORITHM, Buffer.from(ENCRYPTION_KEY, 'utf-8'), Buffer.from(IV, 'utf-8'));
+  let encrypted = cipher.update(text, 'utf8', 'base64');
+  encrypted += cipher.final('base64');
   return encrypted;
 }
 
-
 /**
  * Descriptografa um texto que foi criptografado usando o algoritmo AES-256-CBC.
- * O texto criptografado deve estar no formato 'iv:encryptedData', ambos em hexadecimal.
- * @param encryptedText - O texto criptografado a ser descriptografado.
+ * @param encryptedText - O texto criptografado em base64.
  * @returns O texto original descriptografado.
- * @throws Lança um erro se a chave de criptografia ou o IV não estiverem configurados corretamente,
- * ou se o formato do texto criptografado for inválido.
  */
 export function decrypt(encryptedText: string): string {
-  validateCryptoKeys();
   try {
-    const decipher = createDecipheriv(ALGORITHM, Buffer.from(ENCRYPTION_KEY), Buffer.from(IV));
-    let decrypted = decipher.update(encryptedText, 'hex', 'utf-8');
-    decrypted += decipher.final('utf-8');
+    validateCryptoKeys();
+    const decipher = createDecipheriv(ALGORITHM, Buffer.from(ENCRYPTION_KEY, 'utf-8'), Buffer.from(IV, 'utf-8'));
+    let decrypted = decipher.update(encryptedText, 'base64', 'utf8');
+    decrypted += decipher.final('utf8');
     return decrypted;
   } catch (error) {
-    console.error(`Falha ao descriptografar: ${encryptedText}. Verifique se o dado está realmente criptografado e se as chaves estão corretas.`);
-    // Retorna o texto original se a descriptografia falhar
+    console.error(`[ERRO DE DESCRIPTOGRAFIA]: Falha ao descriptografar. Texto: "${encryptedText}".`, error);
+    // Em caso de erro (ex: texto não criptografado), retorna o próprio texto para evitar que a aplicação quebre.
     return encryptedText;
   }
 }

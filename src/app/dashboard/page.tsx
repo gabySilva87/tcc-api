@@ -79,6 +79,44 @@ export default function DashboardPage() {
     
     fetchInitialData();
   }, [fetchInitialData]);
+ // AQUI É O LUGAR CERTO PARA O CÓDIGO DE RASTREAMENTO
+  useEffect(() => {
+    const driverId = sessionStorage.getItem('driverId');
+    let locationInterval: NodeJS.Timeout;
+
+    if (driverId) {
+        const sendLocation = () => {
+            navigator.geolocation.getCurrentPosition(
+                async (position) => {
+                    const { latitude, longitude } = position.coords;
+                    try {
+                        await fetch(`/api/rastreamento`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ driverId, lat: latitude, lng: longitude }),
+                        });
+                    } catch (error) {
+                        console.error('Falha ao enviar localização para a API interna:', error);
+                    }
+                },
+                (error) => {
+                    console.warn('Não foi possível obter a localização do GPS:', error.message);
+                },
+                { enableHighAccuracy: true } 
+            );
+        };
+        
+        sendLocation(); // Envia a primeira localização imediatamente
+        locationInterval = setInterval(sendLocation, 15000); // E depois a cada 15 segundos
+    }
+
+    // Limpa o intervalo quando o usuário sai da página, para economizar bateria
+    return () => {
+        if (locationInterval) {
+            clearInterval(locationInterval);
+        }
+    };
+  }, []);
 
   const handleDeliverySuccess = useCallback((completedRoute: Route) => {
     setPendingRoutes(prev => prev.filter(r => r.id !== completedRoute.id));
