@@ -18,13 +18,16 @@ export async function POST(request: Request) {
   }
 
   let connection;
+  console.log('DB_USER:', process.env.DB_USER);
+  console.log('DB_PASSWORD:', process.env.DB_PASSWORD);
   try {
+    
     // =======================================================================
     // PASSO 1: CONEXÃO COM O BANCO DE DADOS MYSQL
     // =======================================================================
     connection = await mysql.createConnection({
       host: process.env.DB_HOST,
-      port: 3307,
+      port: Number(process.env.DB_PORT),
       user: process.env.DB_USER,
       password: process.env.DB_PASSWORD,
       database: process.env.DB_DATABASE,

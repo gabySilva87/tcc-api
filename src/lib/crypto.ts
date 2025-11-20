@@ -8,10 +8,10 @@ const ALGORITHM = 'aes-256-cbc';
 
 // A chave de criptografia. DEVE ter 32 caracteres (256 bits).
 // Usa a variável de ambiente ou uma chave padrão segura.
-const ENCRYPTION_KEY = process.env.ENCRYPTION_KEY || "a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4";
+const ENCRYPTION_KEY = process.env.ENCRYPTION_KEY || "A3F9C7D2B8E4F1A6C0D5E7B9A2F4C856";
 // O Vetor de Inicialização (IV). DEVE ter 16 caracteres (128 bits).
 // Usa a variável de ambiente ou um IV padrão seguro.
-const IV = process.env.ENCRYPTION_IV || "a1b2c3d4e5f6a1b2";
+const IV = process.env.ENCRYPTION_IV || "F3A9C7D2E8B4A76";
 
 /**
  * Valida as chaves de criptografia.
