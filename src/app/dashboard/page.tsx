@@ -1,16 +1,15 @@
 'use client';
 
-import { useState, useEffect, useMemo, useCallback } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Map, CheckCheck, History } from "lucide-react";
+import { Map, History } from "lucide-react";
 import Image from "next/image";
 import { useToast } from "@/hooks/use-toast";
 
 import { LogoutButton } from "@/components/logout-button";
 import PendingTab from "@/components/dashboard/pending-tab";
-import DeliveredTab from "@/components/dashboard/delivered-tab";
 import ProfileTab from "@/components/dashboard/profile-tab";
 import HistoryTab from "@/components/dashboard/history-tab";
 import type { Route } from "@/components/dashboard/pending-tab";
@@ -27,11 +26,6 @@ export default function DashboardPage() {
   
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
-  const deliveredRoutes = useMemo(() => 
-    historyRoutes.filter(r => r.status === 'entregue'), 
-    [historyRoutes]
-  );
 
   const fetchInitialData = useCallback(async () => {
     const driverId = sessionStorage.getItem('driverId');
@@ -122,24 +116,30 @@ export default function DashboardPage() {
     setPendingRoutes(prev => prev.filter(r => r.id !== completedRoute.id));
     const successfulRoute = { ...completedRoute, status: 'entregue' as const };
     setHistoryRoutes(prev => [successfulRoute, ...prev]);
+    setActiveTab('history');
   }, []);
   
   const handleDeliveryFailure = useCallback((failedRoute: Route) => {
     setPendingRoutes(prev => prev.filter(r => r.id !== failedRoute.id));
     const failedDelivery = { ...failedRoute, status: 'falha' as const };
     setHistoryRoutes(prev => [failedDelivery, ...prev]);
-    setActiveTab('history'); // Muda para a aba de histórico
+    setActiveTab('history');
   }, []);
 
-  const handleRetry = useCallback(async (retriedRoute: Route) => {
+ const handleRetry = useCallback(async (retriedRoute: Route) => {
     setHistoryRoutes(prev => prev.filter(r => r.id !== retriedRoute.id));
-
+    
     try {
         const driverId = sessionStorage.getItem('driverId');
         const response = await fetch(`/api/encomendas/update-status`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ encomendaId: retriedRoute.id, status: 'Transito', driverId }),
+            body: JSON.stringify({ 
+              encomendaId: retriedRoute.encomendaId,
+              roteiroId: retriedRoute.id, // Adicionado roteiroId que estava faltando
+              status: 'Transito', 
+              driverId 
+            }),
         });
 
         if (!response.ok) {
@@ -148,20 +148,15 @@ export default function DashboardPage() {
             throw new Error(errorData.message || 'Falha ao reiniciar a entrega.');
         }
         
-        const routeToRetry = { ...retriedRoute, status: 'transito' as const };
+        await fetchInitialData(); 
 
-        setPendingRoutes(prev => {
-            if (prev.some(r => r.id === routeToRetry.id)) return prev;
-            return [routeToRetry, ...prev];
-        });
-
-        toast({ title: 'Entrega Reiniciada', description: `A encomenda #${retriedRoute.id} voltou para a lista de pendentes.` });
+        toast({ title: 'Entrega Reiniciada', description: `A encomenda voltou para a lista de pendentes.` });
         setActiveTab('pending');
 
     } catch (error: any) {
         toast({ variant: 'destructive', title: 'Erro!', description: error.message });
     }
-  }, [toast]);
+}, [toast, fetchInitialData]);
 
   const renderContent = () => {
     if (!isMounted || loading) {
@@ -184,37 +179,36 @@ export default function DashboardPage() {
     }
 
     return (
-      <>
-        <div className="mb-8">
-          <h2 className="text-3xl font-bold tracking-tight text-foreground">Bem-vindo, {driverName || 'Motorista'}!</h2>
-          <p className="text-muted-foreground">Aqui estão suas atualizações mais recentes.</p>
-        </div>
+      <div className="grid gap-8 lg:grid-cols-3">
+        <div className="lg:col-span-3 space-y-6">
+          <div className="mb-8">
+            <h2 className="text-3xl font-bold tracking-tight text-foreground">Bem-vindo, {driverName || 'Motorista'}!</h2>
+            <p className="text-muted-foreground">Aqui estão suas atualizações mais recentes.</p>
+          </div>
 
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-3 bg-muted/50 p-1 h-auto">
-            <TabsTrigger value="pending" className="py-2.5 text-sm"><Map className="w-4 h-4 mr-2"/>Em Trânsito</TabsTrigger>
-            <TabsTrigger value="delivered" className="py-2.5 text-sm"><CheckCheck className="w-4 h-4 mr-2"/>Entregues</TabsTrigger>
-            <TabsTrigger value="history" className="py-2.5 text-sm"><History className="w-4 h-4 mr-2"/>Histórico</TabsTrigger>
-          </TabsList>
-          
-          <TabsContent value="pending" className="mt-6">
-            <PendingTab 
-                routes={pendingRoutes} 
-                loading={loading}
-                error={error}
-                onDeliverySuccess={handleDeliverySuccess}
-                onDeliveryFailure={handleDeliveryFailure} // <- Propriedade adicionada
-                setRoutes={setPendingRoutes}
-            />
-          </TabsContent>
-          <TabsContent value="delivered" className="mt-6">
-            <DeliveredTab deliveredRoutes={deliveredRoutes} />
-          </TabsContent>
-          <TabsContent value="history" className="mt-6">
-            <HistoryTab historyItems={historyRoutes} onRetry={handleRetry} />
-          </TabsContent>
-        </Tabs>
-      </>
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+            <TabsList className="grid w-full grid-cols-2 bg-muted/50 p-1 h-auto">
+              <TabsTrigger value="pending" className="py-2.5 text-sm"><Map className="w-4 h-4 mr-2"/>Em Trânsito</TabsTrigger>
+              <TabsTrigger value="history" className="py-2.5 text-sm"><History className="w-4 h-4 mr-2"/>Histórico</TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="pending" className="mt-6">
+              <PendingTab 
+                  routes={pendingRoutes} 
+                  loading={loading}
+                  error={error}
+                  onDeliverySuccess={handleDeliverySuccess}
+                  onDeliveryFailure={handleDeliveryFailure}
+                  setRoutes={setPendingRoutes}
+              />
+            </TabsContent>
+            
+            <TabsContent value="history" className="mt-6">
+              <HistoryTab historyItems={historyRoutes} onRetry={handleRetry} />
+            </TabsContent>
+          </Tabs>
+        </div>
+      </div>
     );
   }
 
@@ -225,7 +219,7 @@ export default function DashboardPage() {
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center gap-2">
                <div className="w-10 h-10 relative">
-                <Image src="/logo.png" alt="LogiDesk Logo" fill className="object-contain" />
+           <Image src="/logo.png" alt="LogiDesk Logo" fill sizes="2.5rem" className="object-contain" />
               </div>
               <h1 className="text-xl font-bold text-foreground">LogiDesk</h1>
             </div>

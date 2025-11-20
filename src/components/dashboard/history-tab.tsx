@@ -65,8 +65,8 @@ const HistoryTab: React.FC<HistoryTabProps> = ({ historyItems, onRetry }) => {
                 </CardHeader>
                 <CardContent>
                     <div className="space-y-4">
-                        {historyItems.map((item) => (
-                            <div key={item.id} className="flex items-center justify-between p-4 bg-secondary/50 rounded-lg shadow-sm cursor-pointer hover:bg-secondary transition-colors" onClick={() => handleDetailsClick(item)}>
+                        {historyItems.map((item,index) => (
+                            <div key={`${item.id}-${index}`} className="flex items-center justify-between p-4 bg-secondary/50 rounded-lg shadow-sm cursor-pointer hover:bg-secondary transition-colors" onClick={() => handleDetailsClick(item)}>
                                 <p className="font-semibold text-foreground">{item.clientName || `Entrega #${item.id}`}</p>
                                 <div className="flex items-center gap-4">
                                     <Badge variant={item.status === 'entregue' ? 'success' : 'destructive'}>
