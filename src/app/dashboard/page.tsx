@@ -181,7 +181,7 @@ export default function DashboardPage() {
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center gap-2">
                <div className="w-10 h-10 relative">
-           <Image src="/logo.png" alt="LogiDesk Logo" fill sizes="2.5rem" className="object-contain" />
+           <Image src="/Logo.png" alt="LogiDesk Logo" fill sizes="2.5rem" className="object-contain" />
               </div>
               <h1 className="text-xl font-bold text-foreground">LogiDesk</h1>
             </div>
