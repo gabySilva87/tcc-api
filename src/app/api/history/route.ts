@@ -26,7 +26,7 @@ export async function GET(request: NextRequest) {
         user: process.env.DB_USER,
         password: process.env.DB_PASSWORD,
         database: process.env.DB_DATABASE,
-        port: 3307,
+        port: process.env.DB_PORT,
     });
 
     // Query SQL CORRIGIDA para buscar todos os dados necessários, incluindo o nome do produto.

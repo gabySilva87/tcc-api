@@ -35,7 +35,7 @@ export async function POST(request: NextRequest) {
       user: process.env.DB_USER,
       password: process.env.DB_PASSWORD,
       database: process.env.DB_DATABASE,
-      port: 3307,
+      port:process.env.DB_PORT,
       ssl: process.env.DB_SSL === 'true' ? { rejectUnauthorized: true } : undefined,
     });
 
