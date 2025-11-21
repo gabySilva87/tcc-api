@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState } from 'react';
@@ -31,13 +30,19 @@ const QUICK_REASONS = [
   'Fora do horário comercial',
 ];
 
+const MAX_CHARS = 200;
+
 export function ReportProblemModal({ isOpen, onClose, route, onSuccess }: ReportProblemModalProps) {
   const { toast } = useToast();
   const [description, setDescription] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleQuickReasonClick = (reason: string) => {
-    setDescription(prev => (prev ? `${prev}, ${reason}` : reason));
+    // Verifica se ultrapassaria o limite antes de adicionar
+    const newText = description ? `${description}, ${reason}` : reason;
+    if (newText.length <= MAX_CHARS) {
+      setDescription(newText);
+    }
   };
 
   const handleSubmit = async () => {
@@ -60,7 +65,7 @@ export function ReportProblemModal({ isOpen, onClose, route, onSuccess }: Report
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           encomendaId: route.encomendaId,
-          status: 'NEntregue', // <<< CORRIGIDO AQUI!
+          status: 'NEntregue',
           problem: description || 'Motivo não especificado.',
           driverId: driverId,
         }),
@@ -73,7 +78,7 @@ export function ReportProblemModal({ isOpen, onClose, route, onSuccess }: Report
 
       toast({
         title: 'Problema Reportado com Sucesso',
-        description: `A entrega #${route.id} foi marcada como 'Não entregue'.`,
+        description: `A entrega ${route.id} foi marcada como 'Não entregue'.`,
       });
 
       onSuccess();
@@ -89,11 +94,11 @@ export function ReportProblemModal({ isOpen, onClose, route, onSuccess }: Report
       setDescription('');
     }
   };
-  
+
   const handleModalClose = () => {
     setDescription('');
     onClose();
-  }
+  };
 
   return (
     <Dialog open={isOpen} onOpenChange={handleModalClose}>
@@ -102,7 +107,8 @@ export function ReportProblemModal({ isOpen, onClose, route, onSuccess }: Report
           <DialogTitle>Reportar Problema na Entrega</DialogTitle>
           {route && (
             <DialogDescription>
-              O que aconteceu com a entrega para <span className="font-semibold text-primary">{route.clientName}</span>?
+              O que aconteceu com a entrega para{' '}
+              <span className="font-semibold text-primary">{route.clientName}</span>?
             </DialogDescription>
           )}
         </DialogHeader>
@@ -127,11 +133,20 @@ export function ReportProblemModal({ isOpen, onClose, route, onSuccess }: Report
             id="description"
             placeholder="Ou descreva o problema (opcional)..."
             value={description}
-            onChange={e => setDescription(e.target.value)}
+            onChange={e => {
+              if (e.target.value.length <= MAX_CHARS) {
+                setDescription(e.target.value);
+              }
+            }}
             rows={4}
             className="mt-2"
             disabled={isSubmitting}
           />
+
+          {/* contador de caracteres */}
+          <div className="text-xs text-muted-foreground text-right">
+            {description.length}/{MAX_CHARS}
+          </div>
         </div>
 
         <DialogFooter>
@@ -142,7 +157,7 @@ export function ReportProblemModal({ isOpen, onClose, route, onSuccess }: Report
           </DialogClose>
           <Button
             onClick={handleSubmit}
-            disabled={isSubmitting}
+            disabled={isSubmitting || description.length > MAX_CHARS}
             className="bg-amber-500 hover:bg-amber-600 text-white"
           >
             {isSubmitting && <RefreshCw className="mr-2 h-4 w-4 animate-spin" />}

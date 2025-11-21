@@ -73,7 +73,69 @@ export default function DashboardPage() {
     
     fetchInitialData();
   }, [fetchInitialData]);
+      
+  // RASTREAMENTO: Este código captura a localização do GPS a cada 15 segundos.
+  useEffect(() => {
+    const driverId = sessionStorage.getItem('driverId');
+    let locationInterval: NodeJS.Timeout;
 
+    const sendLocationData = async (lat: number, lng: number) => {
+        if (!driverId) return;
+
+        try {
+            const body = { driverId, lat, lng };
+            console.log("Enviando dados para a API:", body); // Log para verificar os dados
+            
+            const response = await fetch('/api/rastreamento', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(body),
+            });
+
+            if (!response.ok) {
+                 const errorData = await response.json().catch(() => ({ message: `O servidor respondeu com um erro ${response.status}.` }));
+                 throw new Error(errorData.message);
+            }
+            
+            console.log('[RASTREAMENTO] Localização enviada com sucesso para /api/rastreamento');
+            
+        } catch (error) {
+            let errorMessage = 'Falha ao enviar localização.';
+            if (error instanceof Error) {
+              errorMessage = error.message;
+            }
+            console.error('[RASTREAMENTO] Erro CRÍTICO no fetch:', errorMessage);
+        }
+    };
+
+    if (driverId) {
+        const getLocation = () => {
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    const { latitude, longitude } = position.coords;
+                    console.log(`[RASTREAMENTO REAL] GPS funcionando! Coordenadas: ${latitude}, ${longitude}`);
+                    sendLocationData(latitude, longitude);
+                },
+                (error) => {
+                    console.warn(`AVISO DE GEOLOCALIZAÇÃO: ${error.message}.`);
+                },
+                { enableHighAccuracy: true } 
+            );
+        };
+        
+        getLocation(); // Chama uma vez imediatamente
+        locationInterval = setInterval(getLocation, 15000); // E depois a cada 15 segundos
+    }
+
+    return () => {
+        if (locationInterval) {
+            clearInterval(locationInterval);
+        }
+    };
+  }, []);
+  
   const handleDeliverySuccess = useCallback((completedRoute: Route) => {
     setPendingRoutes(prev => prev.filter(r => r.id !== completedRoute.id));
     const successfulRoute = { ...completedRoute, status: 'entregue' as const };
